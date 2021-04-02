@@ -393,17 +393,33 @@ namespace cAlgo.Robots
         }
         #endregion
 
+        #region Visualization
+
+        //Functional region
         #region VisualizePeaks
+
+        /// <summary>
+        /// Draws all peaks in the list on the active chart as colored dots
+        /// </summary>
+        /// <param name="peaks">List of peaks to be shown</param>
         private void VisualizePeaks(List<Peak> peaks)
         {
             foreach(Peak peak in peaks)
             {
+                //Determine the color of the peak
                 Color peakColor = GetPeakColor(peak);
-                string name = peak.DateTime.ToString() + (peak.FromHighPrice ? " high" : "  low");
+                //The peak has a unique name in the format DateTime_high or DateTime_low
+                string name = peak.DateTime.ToString() + (peak.FromHighPrice ? "_high" : "_low");
+                //Draw the peak on the chart
                 Chart.DrawIcon(name, ChartIconType.Circle, peak.DateTime, peak.Price, peakColor);
             }
         }
 
+        /// <summary>
+        /// Determines the color of a dot visualising a given peak
+        /// </summary>
+        /// <param name="peak">Peak whose color is determined</param>
+        /// <returns></returns>
         private Color GetPeakColor(Peak peak)
         {
             if (peak.FromHighPrice)
@@ -432,6 +448,12 @@ namespace cAlgo.Robots
             }
             
         }
+
+        #endregion
+
+        #region VisualizeTrends
+
+        #endregion
 
         #endregion
 
