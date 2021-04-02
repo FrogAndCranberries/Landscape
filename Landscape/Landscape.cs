@@ -211,7 +211,7 @@ namespace cAlgo.Robots
         }
         #endregion
 
-        //Functional region Identify Peaks
+        //Functional region
         #region IdentifyPeaks
 
         /// <summary>
@@ -266,7 +266,7 @@ namespace cAlgo.Robots
                 {
                     FoundPeaks.Add(new Peak(
                         fromHighPrice: false,
-                        peakType: PeakType.Maximum,
+                        peakType: PeakType.Minimum,
                         datetime: Bars.OpenTimes[index],
                         barIndex: index,
                         price: Bars.LowPrices[index],
@@ -391,6 +391,48 @@ namespace cAlgo.Robots
             }
             return true;
         }
+        #endregion
+
+        #region VisualizePeaks
+        private void VisualizePeaks(List<Peak> peaks)
+        {
+            foreach(Peak peak in peaks)
+            {
+                Color peakColor = GetPeakColor(peak);
+                string name = peak.DateTime.ToString() + (peak.FromHighPrice ? " high" : "  low");
+                Chart.DrawIcon(name, ChartIconType.Circle, peak.DateTime, peak.Price, peakColor);
+            }
+        }
+
+        private Color GetPeakColor(Peak peak)
+        {
+            if (peak.FromHighPrice)
+            {
+                switch (peak.PeakType)
+                {
+                    case PeakType.Maximum:
+                        //High price maximum is green
+                        return Color.Green;
+                    default:
+                        //High price minimum is yellow
+                        return Color.Yellow;
+                }
+            }
+            else
+            {
+                switch (peak.PeakType)
+                {
+                    case PeakType.Maximum:
+                        //Low price maximum is orange
+                        return Color.Orange;
+                    default:
+                        //Low price minimum is red
+                        return Color.Red;
+                }
+            }
+            
+        }
+
         #endregion
 
         private void CreateConditions()
