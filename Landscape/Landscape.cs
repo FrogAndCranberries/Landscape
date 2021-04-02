@@ -12,12 +12,25 @@ namespace cAlgo.Robots
     public class Landscape : Robot
     {
         #region Parameters
+
+        /// <summary>
+        /// Determines the minimum time period between searched peaks
+        /// </summary>
         [Parameter(DefaultValue = 10, MinValue = 1)]
         public int PeakSearchPeriod { get; set; }
+
+        /// <summary>
+        /// Determines a threshold for minimal gradient of a trend if that will be needed. Might have to be landcape-layer specific
+        /// </summary>
+        [Parameter(DefaultValue = 10, MinValue = 1)]
+        public int trendTypeThreshold { get; set; }
+        
         #endregion
 
         #region Variables
-
+        /// <summary>
+        /// Will determine the peakSearchPeriod for each timeframe layer of landscape creation. Values unknown yet
+        /// </summary>
         List<int> Periods = new List<int>() { 5, 10, 20, 30, 50 };
 
 
@@ -160,7 +173,7 @@ namespace cAlgo.Robots
 
             foreach(int period in Periods)
             {
-                BaseLines.AddRange(IdentifyLines(period));
+                BaseLines.AddRange(IdentifyLines(period, trendTypeThreshold));
             }
         }
 
@@ -177,7 +190,9 @@ namespace cAlgo.Robots
             // Get all trends corresponding to those peaks
             List<Trend> Trends = IdentifyTrends(Peaks, threshold);
 
-            
+
+            //After finishing the logic
+            return BaseLines;
         }
 
         private List<Trend> IdentifyTrends(List<Peak> peaks, int threshold)
@@ -189,9 +204,14 @@ namespace cAlgo.Robots
             {
 
             }
+
+
+            //After finishing the logic
+            return Trends;
         }
         #endregion
 
+        //Functional region Identify Peaks
         #region IdentifyPeaks
 
         /// <summary>
