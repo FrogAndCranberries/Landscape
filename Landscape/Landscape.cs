@@ -208,10 +208,13 @@ namespace cAlgo.Robots
         {
             List<BaseLine> BaseLines = new List<BaseLine>();
 
-            foreach(int period in Periods)
+            BaseLines.AddRange(IdentifyLines(PeakSearchPeriod, trendTypeThreshold));
+
+            //Will be used to get multiple landscape layers with different line id periods
+            /*foreach(int period in Periods)
             {
                 BaseLines.AddRange(IdentifyLines(period, trendTypeThreshold));
-            }
+            }*/
         }
 
         #region IdentifyLines
@@ -230,6 +233,9 @@ namespace cAlgo.Robots
             //Find all trends corresponding to those peaks
             List<Trend> Trends = IdentifyTrends(Peaks, threshold);
 
+            //Visualize found trends and peaks
+            VisualizePeaks(Peaks);
+            VisualizeTrendContours(Trends);
 
             //After finishing the logic
             return BaseLines;
@@ -566,7 +572,7 @@ namespace cAlgo.Robots
         /// Draws the contours of the trends on the active chart as colored lines
         /// </summary>
         /// <param name="trends">List of trends to be shown</param>
-        private void VisualizeTrends(List<Trend> trends)
+        private void VisualizeTrendContours(List<Trend> trends)
         {
             foreach(Trend trend in trends)
             {
