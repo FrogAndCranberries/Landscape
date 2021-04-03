@@ -104,6 +104,13 @@ namespace cAlgo.Robots
 
                 Intensity = intensity;
             }
+
+            public override string ToString()
+            {
+
+                return string.Format("{0} price {1} at index {2}, time {3}, price {4}", 
+                    FromHighPrice ? "High" : "Low", PeakType, BarIndex, DateTime, Price);
+            }
         }
 
         /// <summary>
@@ -162,6 +169,12 @@ namespace cAlgo.Robots
                 LowEndPeak = lowEndPeak;
                 SourcePeriod = sourcePeriod;
                 Intensity = intensity;
+            }
+
+            public override string ToString()
+            {
+                return string.Format("HP {0}, LP {1}, start at index HP {2}, LP {3}, end at HP {4}, LP {5}",
+                    HighPriceTrendType, LowPriceTrendType, HighStartPeak.BarIndex, LowStartPeak.BarIndex, HighEndPeak.BarIndex, LowEndPeak.BarIndex);
             }
 
             private void GetTrendType(double trendHeightThreshold)
@@ -298,7 +311,7 @@ namespace cAlgo.Robots
                 //Get the newly formed protoTrend
                 ProtoTrends.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
             }
-
+            return ProtoTrends;
             //If there is just one trend found, return it
             if(ProtoTrends.Count == 1)
             {
@@ -419,7 +432,7 @@ namespace cAlgo.Robots
             // If there is no high price peak at the end of Bars series, add a peak corresponding to last bar high price
             if (FoundPeaks.FindLast(peak => peak.FromHighPrice).BarIndex != Bars.Count - 1)
             {
-                FoundPeaks.Insert(0, new Peak(
+                FoundPeaks.Add(new Peak(
                     fromHighPrice: true,
                     peakType: (Bars.HighPrices.LastValue > Bars.HighPrices.Last(1)) ? PeakType.Maximum : PeakType.Minimum,
                     datetime: Bars.OpenTimes.LastValue,
@@ -431,7 +444,7 @@ namespace cAlgo.Robots
             // If there is no low price peak at the end of Bars series, add a peak corresponding to last bar low price
             if (FoundPeaks.FindLast(peak => !peak.FromHighPrice).BarIndex != Bars.Count - 1)
             {
-                FoundPeaks.Insert(0, new Peak(
+                FoundPeaks.Add(new Peak(
                     fromHighPrice: false,
                     peakType: (Bars.LowPrices.LastValue > Bars.LowPrices.Last(1)) ? PeakType.Maximum : PeakType.Minimum,
                     datetime: Bars.OpenTimes.LastValue,
@@ -529,6 +542,7 @@ namespace cAlgo.Robots
                 string name = peak.DateTime.ToString() + (peak.FromHighPrice ? "_high" : "_low");
                 //Draw the peak on the chart
                 Chart.DrawIcon(name, ChartIconType.Circle, peak.DateTime, peak.Price, peakColor);
+                Print(peak);
             }
         }
 
@@ -583,6 +597,8 @@ namespace cAlgo.Robots
 
                 DrawLineBetweenPeaks(trend.HighStartPeak, trend.HighEndPeak, HighPriceColor);
                 DrawLineBetweenPeaks(trend.LowStartPeak, trend.LowEndPeak, LowPriceColor);
+
+                Print(trend);
             }
         }
 
