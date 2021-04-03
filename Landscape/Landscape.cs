@@ -22,8 +22,8 @@ namespace cAlgo.Robots
         /// <summary>
         /// Determines a threshold for minimal gradient of a trend if that will be needed. Might have to be landcape-layer specific
         /// </summary>
-        [Parameter(DefaultValue = 10, MinValue = 1)]
-        public int trendTypeThreshold { get; set; }
+        [Parameter(DefaultValue = 5, MinValue = 0)]
+        public int trendIdThresholdPips { get; set; }
         
         #endregion
 
@@ -208,7 +208,7 @@ namespace cAlgo.Robots
         {
             List<BaseLine> BaseLines = new List<BaseLine>();
 
-            BaseLines.AddRange(IdentifyLines(PeakSearchPeriod, trendTypeThreshold));
+            BaseLines.AddRange(IdentifyLines(PeakSearchPeriod));
 
             //Will be used to get multiple landscape layers with different line id periods
             /*foreach(int period in Periods)
@@ -219,7 +219,7 @@ namespace cAlgo.Robots
 
         #region IdentifyLines
 
-        private List<BaseLine> IdentifyLines(int period, int threshold)
+        private List<BaseLine> IdentifyLines(int period)
         {
             //Stores all found baseLines
             List<BaseLine> BaseLines = new List<BaseLine>();
@@ -231,7 +231,7 @@ namespace cAlgo.Robots
             Peaks = IdentifyPeaks(period);
 
             //Find all trends corresponding to those peaks
-            List<Trend> Trends = IdentifyTrends(Peaks, threshold);
+            List<Trend> Trends = IdentifyTrends(Peaks);
 
             //Visualize found trends and peaks
             VisualizePeaks(Peaks);
@@ -243,13 +243,15 @@ namespace cAlgo.Robots
         #endregion
 
         #region IdentifyTrends
-        private List<Trend> IdentifyTrends(List<Peak> peaks, int threshold)
+        private List<Trend> IdentifyTrends(List<Peak> peaks)
         {
             //Stores initially found short Trends
             List<Trend> ProtoTrends = new List<Trend>();
 
             //Stores finally combined protoTrends
             List<Trend> Trends = new List<Trend>();
+
+            double Threshold = trendIdThresholdPips * Symbol.PipSize;
 
             //Get a trend between each four peaks determining the shortest time segment containing no peaks
             //Stores currently examined high and low price peaks for the start of the trend and the end of the trend
@@ -276,7 +278,7 @@ namespace cAlgo.Robots
             peaks.Remove(LowEndPeak);
 
             //Get the first trend corresponding to those four separately
-            ProtoTrends.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, trendTypeThreshold));
+            ProtoTrends.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
 
             //Goes through the rest of the list, shifting each new peak into corresponding EndPeak and creating a new trend
             foreach (Peak peak in peaks)
@@ -294,7 +296,7 @@ namespace cAlgo.Robots
                 }
 
                 //Get the newly formed protoTrend
-                ProtoTrends.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, trendTypeThreshold));
+                ProtoTrends.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
             }
 
             //If there is just one trend found, return it
