@@ -31,7 +31,7 @@ namespace cAlgo.Robots
         /// <summary>
         /// Will determine the peakSearchPeriod for each timeframe layer of landscape creation. Values unknown yet
         /// </summary>
-        List<int> Periods = new List<int>() { 5, 10, 20, 30, 50 };
+        List<int> Periods = new List<int>() {5, 10, 20};
 
 
         #endregion
@@ -109,7 +109,7 @@ namespace cAlgo.Robots
         /// <summary>
         /// Represents if trend is an uptrend, consolidation or downtrend
         /// </summary>
-        private enum TrendType
+        private enum PriceTrendType
         {
             Uptrend,
             Consolidation,
@@ -121,11 +121,14 @@ namespace cAlgo.Robots
         /// </summary>
         private class Trend
         {
-            public TrendType TrendType;
+            //TODO: Comment and structuralize the type, organise its function against IdentifyTrends function
+            public PriceTrendType HighPriceTrendType;
+            public PriceTrendType LowPriceTrendType;
 
-            public Peak StartPeak;
-
-            public Peak EndPeak;
+            public Peak HighStartPeak;
+            public Peak LowStartPeak;
+            public Peak HighEndPeak;
+            public Peak LowEndPeak;
 
             public int LengthInBars;
 
@@ -137,25 +140,59 @@ namespace cAlgo.Robots
 
             public double Intensity;
 
-            public Trend(Peak startPeak, int sourcePeriod)
+            public Trend(Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double trendHeightThreshold)
             {
-                StartPeak = startPeak;
-                SourcePeriod = sourcePeriod;
+                HighStartPeak = highStartPeak;
+                LowStartPeak = lowStartPeak;
+                HighEndPeak = highEndPeak;
+                LowEndPeak = lowEndPeak;
+
+                GetTrendType(trendHeightThreshold);
             }
 
-            public Trend(TrendType trendType, Peak startPeak, Peak endPeak, int sourcePeriod, double intensity = 1)
+            public Trend(PriceTrendType highPriceTrendType, PriceTrendType lowPriceTrendType, 
+                Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, 
+                int sourcePeriod, double intensity = 1)
             {
-                TrendType = trendType;
-                StartPeak = startPeak;
-                EndPeak = endPeak;
+                HighPriceTrendType = highPriceTrendType;
+                LowPriceTrendType = lowPriceTrendType;
+                HighStartPeak = highStartPeak;
+                LowStartPeak = lowStartPeak;
+                HighEndPeak = highEndPeak;
+                LowEndPeak = lowEndPeak;
                 SourcePeriod = sourcePeriod;
                 Intensity = intensity;
-
             }
 
-            public void Complete(Peak endPeak)
+            private void GetTrendType(double trendHeightThreshold)
             {
+                HighPriceTrendType = GetTrendTypeBetweenPeaks(HighStartPeak, HighEndPeak, trendHeightThreshold);
+                LowPriceTrendType = GetTrendTypeBetweenPeaks(LowStartPeak, LowEndPeak, trendHeightThreshold);
+            }
 
+            private PriceTrendType GetTrendTypeBetweenPeaks(Peak start, Peak end, double threshold)
+            {
+                if (end.Price - start.Price > threshold)
+                {
+                    return PriceTrendType.Uptrend;
+                }
+                if (end.Price - start.Price < threshold * -1)
+                {
+                    return PriceTrendType.Downtrend;
+                }
+                return PriceTrendType.Consolidation;
+            }
+
+            public bool HasSameTrendType(Trend other)
+            {
+                return HighPriceTrendType == other.HighPriceTrendType && LowPriceTrendType == other.LowPriceTrendType;
+            }
+
+            //TODO: behavior related to other properties
+            public void CombineWithFollowingTrend(Trend followingTrend)
+            {
+                HighEndPeak = followingTrend.HighEndPeak;
+                LowEndPeak = followingTrend.LowEndPeak;
             }
         }
 
@@ -181,30 +218,102 @@ namespace cAlgo.Robots
 
         private List<BaseLine> IdentifyLines(int period, int threshold)
         {
-            // Stores all found baseLines
+            //Stores all found baseLines
             List<BaseLine> BaseLines = new List<BaseLine>();
 
-            // Get all peaks with given period
-            List<Peak> Peaks = IdentifyPeaks(period);
+            //Stores all peaks with a given period
+            List<Peak> Peaks;
 
-            // Get all trends corresponding to those peaks
+            //Find all peaks with a given period
+            Peaks = IdentifyPeaks(period);
+
+            //Find all trends corresponding to those peaks
             List<Trend> Trends = IdentifyTrends(Peaks, threshold);
 
 
             //After finishing the logic
             return BaseLines;
         }
+        #endregion
 
+        #region IdentifyTrends
         private List<Trend> IdentifyTrends(List<Peak> peaks, int threshold)
         {
-            // Stores found trends
+            //Stores initially found short Trends
+            List<Trend> ProtoTrends = new List<Trend>();
+
+            //Stores finally combined protoTrends
             List<Trend> Trends = new List<Trend>();
 
-            foreach(Peak peak in peaks)
-            {
+            //Get a trend between each four peaks determining the shortest time segment containing no peaks
+            //Stores currently examined high and low price peaks for the start of the trend and the end of the trend
+            Peak HighStartPeak;
+            Peak LowStartPeak;
+            Peak HighEndPeak;
+            Peak LowEndPeak;
 
+            //First, load the first four peaks separately to ensure that we can define a trend (otherwise those could be 4 high price peaks that are useless without a low price peak somewhere ahead)
+            //Assign first high and low price peak from the list to HighStart and LowStart
+            HighStartPeak = peaks.Find(peak => peak.FromHighPrice);
+            LowStartPeak = peaks.Find(peak => !peak.FromHighPrice);
+
+            //Removes those two peaks from the list
+            peaks.Remove(HighStartPeak);
+            peaks.Remove(LowStartPeak);
+
+            //Assigns the next high and low price peak from the list to HighEnd and LowEnd
+            HighEndPeak = peaks.Find(peak => peak.FromHighPrice);
+            LowEndPeak = peaks.Find(peak => !peak.FromHighPrice);
+
+            //Removes those two peaks from the list
+            peaks.Remove(HighEndPeak);
+            peaks.Remove(LowEndPeak);
+
+            //Get the first trend corresponding to those four separately
+            ProtoTrends.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, trendTypeThreshold));
+
+            //Goes through the rest of the list, shifting each new peak into corresponding EndPeak and creating a new trend
+            foreach (Peak peak in peaks)
+            {
+                //Shift the new peak into the four working peaks
+                if(peak.FromHighPrice)
+                {
+                    HighStartPeak = HighEndPeak;
+                    HighEndPeak = peak;
+                }
+                else
+                {
+                    LowStartPeak = LowEndPeak;
+                    LowEndPeak = peak;
+                }
+
+                //Get the newly formed protoTrend
+                ProtoTrends.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, trendTypeThreshold));
             }
 
+            //If there is just one trend found, return it
+            if(ProtoTrends.Count == 1)
+            {
+                return ProtoTrends;
+            }
+
+            //Combine the short trends if they have the same type
+            Trend CurrentTrend = ProtoTrends[0];
+            foreach(Trend trend in ProtoTrends)
+            {
+                if(CurrentTrend.HasSameTrendType(trend))
+                {
+                    CurrentTrend.CombineWithFollowingTrend(trend);
+                }
+                else
+                {
+                    Trends.Add(CurrentTrend);
+                    CurrentTrend = trend;
+                }
+            }
+
+            //Add the last checked trend
+            Trends.Add(CurrentTrend);
 
             //After finishing the logic
             return Trends;
