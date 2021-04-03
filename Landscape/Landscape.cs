@@ -12,7 +12,7 @@ namespace cAlgo.Robots
     public class Landscape : Robot
     {
         #region Parameters
-
+        //TODO: right now there is actually half of this period between peaks
         /// <summary>
         /// Determines the minimum time period between searched peaks
         /// </summary>
@@ -204,6 +204,13 @@ namespace cAlgo.Robots
             //TODO: behavior related to other properties
             public void CombineWithFollowingTrend(Trend followingTrend)
             {
+                bool trendFollows = (HighEndPeak == followingTrend.HighStartPeak && LowEndPeak == followingTrend.LowStartPeak) ||
+                    (HighEndPeak == followingTrend.HighStartPeak && LowEndPeak == followingTrend.LowEndPeak) ||
+                    (LowEndPeak == followingTrend.LowStartPeak && HighEndPeak == followingTrend.HighEndPeak);
+                if(!trendFollows)
+                {
+                    throw new ArgumentException(this.ToString() + followingTrend.ToString());
+                }
                 HighEndPeak = followingTrend.HighEndPeak;
                 LowEndPeak = followingTrend.LowEndPeak;
             }
@@ -256,71 +263,29 @@ namespace cAlgo.Robots
         #endregion
 
         #region IdentifyTrends
+
+        /// <summary>
+        /// Finds all trends between peaks in a given list
+        /// </summary>
+        /// <param name="peaks">A list of at least two high price and at least two low price Peaks bordering the trends</param>
+        /// <returns></returns>
         private List<Trend> IdentifyTrends(List<Peak> peaks)
         {
-            //Stores initially found short Trends
-            List<Trend> ProtoTrends = new List<Trend>();
-
-            //Stores finally combined protoTrends
+            //Stores finally merged TrendSegments
             List<Trend> Trends = new List<Trend>();
 
-            double Threshold = trendIdThresholdPips * Symbol.PipSize;
-
-            //Get a trend between each four peaks determining the shortest time segment containing no peaks
-            //Stores currently examined high and low price peaks for the start of the trend and the end of the trend
-            Peak HighStartPeak;
-            Peak LowStartPeak;
-            Peak HighEndPeak;
-            Peak LowEndPeak;
-
-            //First, load the first four peaks separately to ensure that we can define a trend (otherwise those could be 4 high price peaks that are useless without a low price peak somewhere ahead)
-            //Assign first high and low price peak from the list to HighStart and LowStart
-            HighStartPeak = peaks.Find(peak => peak.FromHighPrice);
-            LowStartPeak = peaks.Find(peak => !peak.FromHighPrice);
-
-            //Removes those two peaks from the list
-            peaks.Remove(HighStartPeak);
-            peaks.Remove(LowStartPeak);
-
-            //Assigns the next high and low price peak from the list to HighEnd and LowEnd
-            HighEndPeak = peaks.Find(peak => peak.FromHighPrice);
-            LowEndPeak = peaks.Find(peak => !peak.FromHighPrice);
-
-            //Removes those two peaks from the list
-            peaks.Remove(HighEndPeak);
-            peaks.Remove(LowEndPeak);
-
-            //Get the first trend corresponding to those four separately
-            ProtoTrends.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
-
-            //Goes through the rest of the list, shifting each new peak into corresponding EndPeak and creating a new trend
-            foreach (Peak peak in peaks)
+            List<Trend> TrendSegments = GetTrendSegments(peaks);
+            //return TrendSegments;
+            if(TrendSegments.Count == 1)
             {
-                //Shift the new peak into the four working peaks
-                if(peak.FromHighPrice)
-                {
-                    HighStartPeak = HighEndPeak;
-                    HighEndPeak = peak;
-                }
-                else
-                {
-                    LowStartPeak = LowEndPeak;
-                    LowEndPeak = peak;
-                }
-
-                //Get the newly formed protoTrend
-                ProtoTrends.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
-            }
-            return ProtoTrends;
-            //If there is just one trend found, return it
-            if(ProtoTrends.Count == 1)
-            {
-                return ProtoTrends;
+                return TrendSegments;
             }
 
             //Combine the short trends if they have the same type
-            Trend CurrentTrend = ProtoTrends[0];
-            foreach(Trend trend in ProtoTrends)
+            Trend CurrentTrend = TrendSegments[0];
+            TrendSegments.RemoveAt(0);
+
+            foreach(Trend trend in TrendSegments)
             {
                 if(CurrentTrend.HasSameTrendType(trend))
                 {
@@ -339,6 +304,75 @@ namespace cAlgo.Robots
             //After finishing the logic
             return Trends;
         }
+
+        private List<Trend> GetTrendSegments(List<Peak> peaks)
+        {
+            List<Trend> TrendSegments = new List<Trend>();
+
+            double Threshold = trendIdThresholdPips * Symbol.PipSize;
+
+            Peak HighStartPeak;
+            Peak LowStartPeak;
+            Peak HighEndPeak;
+            Peak LowEndPeak;
+
+            List<Peak> HighPeaks = peaks.FindAll(peak => peak.FromHighPrice);
+            List<Peak> LowPeaks = peaks.FindAll(peak => !peak.FromHighPrice);
+
+            HighStartPeak = HighPeaks[0];
+            HighEndPeak = HighPeaks[1];
+            LowStartPeak = LowPeaks[0];
+            LowEndPeak = LowPeaks[1];
+
+            HighPeaks.RemoveRange(0, 2);
+            LowPeaks.RemoveRange(0, 2);
+
+            TrendSegments.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
+
+            while (HighPeaks.Count > 0 && LowPeaks.Count > 0)
+            {
+
+                if(HighEndPeak.BarIndex < LowEndPeak.BarIndex)
+                {
+                    HighStartPeak = HighEndPeak;
+                    HighEndPeak = HighPeaks[0];
+                    HighPeaks.RemoveAt(0);
+                }
+                else if(HighEndPeak.BarIndex > LowEndPeak.BarIndex)
+                {
+                    LowStartPeak = LowEndPeak;
+                    LowEndPeak = LowPeaks[0];
+                    LowPeaks.RemoveAt(0);
+                }
+                else
+                {
+                    HighStartPeak = HighEndPeak;
+                    HighEndPeak = HighPeaks[0];
+                    HighPeaks.RemoveAt(0);
+                    continue;
+                }
+
+                TrendSegments.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
+            }
+
+            while(HighPeaks.Count > 0)
+            {
+                HighStartPeak = HighEndPeak;
+                HighEndPeak = HighPeaks[0];
+                HighPeaks.RemoveAt(0);
+                TrendSegments.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
+            }
+            while (LowPeaks.Count > 0)
+            {
+                LowStartPeak = LowEndPeak;
+                LowEndPeak = LowPeaks[0];
+                LowPeaks.RemoveAt(0);
+                TrendSegments.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
+            }
+
+            return TrendSegments;
+        }
+
         #endregion
 
         //Functional region
@@ -539,7 +573,7 @@ namespace cAlgo.Robots
                 //Determine the color of the peak
                 Color peakColor = GetPeakColor(peak);
                 //The peak has a unique name in the format DateTime_high or DateTime_low
-                string name = peak.DateTime.ToString() + (peak.FromHighPrice ? "_high" : "_low");
+                string name = peak.DateTime.ToString() + (peak.FromHighPrice ? "_high" : "_low") + "_peak";
                 //Draw the peak on the chart
                 Chart.DrawIcon(name, ChartIconType.Circle, peak.DateTime, peak.Price, peakColor);
                 Print(peak);
@@ -595,6 +629,7 @@ namespace cAlgo.Robots
                 Color HighPriceColor = GetTrendLineColor(trend.HighPriceTrendType);
                 Color LowPriceColor = GetTrendLineColor(trend.LowPriceTrendType);
 
+
                 DrawLineBetweenPeaks(trend.HighStartPeak, trend.HighEndPeak, HighPriceColor);
                 DrawLineBetweenPeaks(trend.LowStartPeak, trend.LowEndPeak, LowPriceColor);
 
@@ -617,7 +652,7 @@ namespace cAlgo.Robots
 
         private void DrawLineBetweenPeaks(Peak startPeak, Peak endPeak, Color color)
         {
-            string name = string.Format("{0}_{1}_{2}_{3}", startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price);
+            string name = string.Format("{0}_{1}_to_{2}_{3}_trend", startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price);
             Chart.DrawTrendLine(name, startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price, color);
         }
         #endregion
