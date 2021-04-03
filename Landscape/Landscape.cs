@@ -109,7 +109,7 @@ namespace cAlgo.Robots
         /// <summary>
         /// Represents if trend is an uptrend, consolidation or downtrend
         /// </summary>
-        private enum PriceTrendType
+        private enum TrendType
         {
             Uptrend,
             Consolidation,
@@ -122,8 +122,8 @@ namespace cAlgo.Robots
         private class Trend
         {
             //TODO: Comment and structuralize the type, organise its function against IdentifyTrends function
-            public PriceTrendType HighPriceTrendType;
-            public PriceTrendType LowPriceTrendType;
+            public TrendType HighPriceTrendType;
+            public TrendType LowPriceTrendType;
 
             public Peak HighStartPeak;
             public Peak LowStartPeak;
@@ -150,7 +150,7 @@ namespace cAlgo.Robots
                 GetTrendType(trendHeightThreshold);
             }
 
-            public Trend(PriceTrendType highPriceTrendType, PriceTrendType lowPriceTrendType, 
+            public Trend(TrendType highPriceTrendType, TrendType lowPriceTrendType, 
                 Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, 
                 int sourcePeriod, double intensity = 1)
             {
@@ -170,17 +170,17 @@ namespace cAlgo.Robots
                 LowPriceTrendType = GetTrendTypeBetweenPeaks(LowStartPeak, LowEndPeak, trendHeightThreshold);
             }
 
-            private PriceTrendType GetTrendTypeBetweenPeaks(Peak start, Peak end, double threshold)
+            private TrendType GetTrendTypeBetweenPeaks(Peak start, Peak end, double threshold)
             {
                 if (end.Price - start.Price > threshold)
                 {
-                    return PriceTrendType.Uptrend;
+                    return TrendType.Uptrend;
                 }
                 if (end.Price - start.Price < threshold * -1)
                 {
-                    return PriceTrendType.Downtrend;
+                    return TrendType.Downtrend;
                 }
-                return PriceTrendType.Consolidation;
+                return TrendType.Consolidation;
             }
 
             public bool HasSameTrendType(Trend other)
@@ -562,6 +562,40 @@ namespace cAlgo.Robots
 
         #region VisualizeTrends
 
+        /// <summary>
+        /// Draws the contours of the trends on the active chart as colored lines
+        /// </summary>
+        /// <param name="trends">List of trends to be shown</param>
+        private void VisualizeTrends(List<Trend> trends)
+        {
+            foreach(Trend trend in trends)
+            {
+                Color HighPriceColor = GetTrendLineColor(trend.HighPriceTrendType);
+                Color LowPriceColor = GetTrendLineColor(trend.LowPriceTrendType);
+
+                DrawLineBetweenPeaks(trend.HighStartPeak, trend.HighEndPeak, HighPriceColor);
+                DrawLineBetweenPeaks(trend.LowStartPeak, trend.LowEndPeak, LowPriceColor);
+            }
+        }
+
+        private Color GetTrendLineColor(TrendType trendType)
+        {
+            switch (trendType)
+            {
+                case TrendType.Uptrend:
+                    return Color.Green;
+                case TrendType.Downtrend:
+                    return Color.Red;
+                default:
+                    return Color.Yellow;
+            }
+        }
+
+        private void DrawLineBetweenPeaks(Peak startPeak, Peak endPeak, Color color)
+        {
+            string name = string.Format("{0}_{1}_{2}_{3}", startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price);
+            Chart.DrawTrendLine(name, startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price, color);
+        }
         #endregion
 
         #endregion
