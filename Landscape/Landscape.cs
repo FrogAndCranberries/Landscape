@@ -32,9 +32,9 @@ namespace cAlgo.Robots
         /// </summary>
         List<int> Periods = new List<int>() {5, 10, 20};
 
-
         #endregion
 
+        #region Core fuctions
         protected override void OnStart()
         {
             CreateLandscape();
@@ -57,12 +57,12 @@ namespace cAlgo.Robots
             // Put your deinitialization logic here
         }
 
+        #endregion
+
         #region Methods
         private void CreateLandscape()
         {
-            List<BaseLine> BaseLines = new List<BaseLine>();
-
-            BaseLines.AddRange(IdentifyLines(PeakSearchPeriod));
+            List<BaseLine> BaseLines = IdentifyLines(PeakSearchPeriod);
 
             //Will be used to get multiple landscape layers with different line id periods
             /*foreach(int period in Periods)
