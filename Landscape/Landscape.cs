@@ -12,9 +12,8 @@ namespace cAlgo.Robots
     public class Landscape : Robot
     {
         #region Parameters
-        //TODO: right now there is actually half of this period between peaks
         /// <summary>
-        /// Determines the minimum time period between searched peaks
+        /// Determines the minimum number of bars between peaks of the same kind
         /// </summary>
         [Parameter(DefaultValue = 10, MinValue = 1)]
         public int PeakSearchPeriod { get; set; }
@@ -275,34 +274,48 @@ namespace cAlgo.Robots
             List<Trend> Trends = new List<Trend>();
 
             List<Trend> TrendSegments = GetTrendSegments(peaks);
-            //return TrendSegments;
+
+            return TrendSegments;
+
+            //TODO: What to do with short trend segemnts we have now?
+            /*
             if(TrendSegments.Count == 1)
             {
                 return TrendSegments;
             }
 
-            //Combine the short trends if they have the same type
-            Trend CurrentTrend = TrendSegments[0];
-            TrendSegments.RemoveAt(0);
+            Trends = MergeTrendSegments(TrendSegments);
 
-            foreach(Trend trend in TrendSegments)
+            //After finishing the logic
+            return Trends;
+            */
+        }
+
+        private List<Trend> MergeTrendSegments(List<Trend> trendSegments)
+        {
+            List<Trend> mergedTrends = new List<Trend>();
+
+            //Combine the short trends if they have the same type
+            Trend CurrentTrend = trendSegments[0];
+            trendSegments.RemoveAt(0);
+
+            foreach (Trend trend in trendSegments)
             {
-                if(CurrentTrend.HasSameTrendType(trend))
+                if (CurrentTrend.HasSameTrendType(trend))
                 {
                     CurrentTrend.CombineWithFollowingTrend(trend);
                 }
                 else
                 {
-                    Trends.Add(CurrentTrend);
+                    mergedTrends.Add(CurrentTrend);
                     CurrentTrend = trend;
                 }
             }
 
             //Add the last checked trend
-            Trends.Add(CurrentTrend);
+            mergedTrends.Add(CurrentTrend);
 
-            //After finishing the logic
-            return Trends;
+            return mergedTrends;
         }
 
         private List<Trend> GetTrendSegments(List<Peak> peaks)
