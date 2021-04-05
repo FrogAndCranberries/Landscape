@@ -6,6 +6,7 @@ using cAlgo.API;
 using cAlgo.API.Indicators;
 using cAlgo.API.Internals;
 using cAlgo.Indicators;
+using MathNet.Numerics;
 
 namespace cAlgo
 {
