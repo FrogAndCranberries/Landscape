@@ -54,6 +54,7 @@
     <Compile Include="PeakType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Trend.cs" />
+    <Compile Include="TrendLine.cs" />
     <Compile Include="TrendType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

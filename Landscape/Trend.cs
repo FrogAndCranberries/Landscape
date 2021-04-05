@@ -45,7 +45,7 @@ namespace cAlgo
 
         // Access to the Algo API
         private Algo AlgoAPI;
-        
+
         // General constructor taking four bordering peaks and the Algo API
         public Trend(Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double trendHeightThreshold, Algo algoAPI)
         {
@@ -86,7 +86,24 @@ namespace cAlgo
                 HighPriceTrendType, LowPriceTrendType, HighStartPeak.BarIndex, LowStartPeak.BarIndex, HighEndPeak.BarIndex, LowEndPeak.BarIndex);
         }
 
+        public TrendLine GetHighTrendLine()
+        {
+            TrendLine trendLine = new TrendLine();
 
+            int coreStartIndex = Math.Max(HighStartPeak.BarIndex, LowStartPeak.BarIndex);
+            int coreEndIndex = Math.Min(HighEndPeak.BarIndex, LowEndPeak.BarIndex);
+
+            trendLine = FitHighPriceWithLine(coreStartIndex, coreEndIndex);
+
+            return trendLine;
+        }
+
+        private TrendLine FitHighPriceWithLine(int startIndex, int endIndex)
+        {
+            return new TrendLine();
+        }
+
+        #region Visualization
         /// <summary>
         /// Draws the contours of the trend on the active chart as colored lines
         /// </summary>
@@ -102,7 +119,7 @@ namespace cAlgo
             AlgoAPI.Print(ToString());
 
         }
-
+        
         private Color GetTrendLineColor(TrendType trendType)
         {
             switch (trendType)
@@ -121,7 +138,9 @@ namespace cAlgo
             string name = string.Format("{0}_{1}_to_{2}_{3}_trend", startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price);
             AlgoAPI.Chart.DrawTrendLine(name, startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price, color);
         }
+        #endregion
 
+        #region Useless
         // TODO: following functions either obsolete or need reworking
         private void GetTrendType(double trendHeightThreshold)
         {
@@ -142,6 +161,7 @@ namespace cAlgo
             return TrendType.Consolidation;
         }
 
+
         public bool HasSameTrendType(Trend other)
         {
             return HighPriceTrendType == other.HighPriceTrendType && LowPriceTrendType == other.LowPriceTrendType;
@@ -160,5 +180,7 @@ namespace cAlgo
             HighEndPeak = followingTrend.HighEndPeak;
             LowEndPeak = followingTrend.LowEndPeak;
         }
+
+        #endregion
     }
 }
