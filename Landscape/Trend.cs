@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using cAlgo.API;
+using cAlgo.API.Indicators;
+using cAlgo.API.Internals;
+using cAlgo.Indicators;
 
 namespace cAlgo
 {
@@ -10,39 +14,61 @@ namespace cAlgo
     /// </summary>
     class Trend
     {
-        //TODO: Comment and structuralize the type, organise its function against IdentifyTrends function
-        public TrendType HighPriceTrendType;
-        public TrendType LowPriceTrendType;
-
+        // The four peaks bordering the high price and low price segments contained in the trend
         public Peak HighStartPeak;
         public Peak LowStartPeak;
         public Peak HighEndPeak;
         public Peak LowEndPeak;
 
+        // The type of the trend in high- and low- price segment
+        // TODO: will be replaced by a double in interval(-1,1)
+        public TrendType HighPriceTrendType;
+        public TrendType LowPriceTrendType;
+
+        // Length of the trend core (high and low price segment overlap) in bars
         public int LengthInBars;
 
+        // Price difference between highest and lowest bordering peak
+        // BS if trend is a triangle, channel or so
         public double Height;
 
+        // The PeakSearchPeriod at which the peaks bordering the trend were identified
         public int SourcePeriod;
 
-        public double Gradient;
+        // The gradient of the low- and high- price change per bar in respective segments
+        // Ratio of (price change)/(number of bars in segment)
+        public double HighPriceGradient;
+        public double LowPriceGradient;
 
+        // How important the trend is
         public double Intensity;
 
-        public Trend(Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double trendHeightThreshold)
+        // Access to the Algo API for methods
+        private Algo AlgoAPI;
+        
+        // General constructor taking four bordering peaks and the Algo API
+        public Trend(Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double trendHeightThreshold, Algo algoAPI)
         {
+            // Initialize the bordering peaks
             HighStartPeak = highStartPeak;
             LowStartPeak = lowStartPeak;
             HighEndPeak = highEndPeak;
             LowEndPeak = lowEndPeak;
 
+            // Initialize the algo API object
+            AlgoAPI = algoAPI;
+
+            // Set the type of the high and low price trend
+            // TODO: To be changed to a double, also wont need a threshold. Add a source period check and assignment
             GetTrendType(trendHeightThreshold);
         }
 
+        // Specific constructor to create a custom trend with all fields
         public Trend(TrendType highPriceTrendType, TrendType lowPriceTrendType,
             Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak,
             int sourcePeriod, double intensity = 1)
         {
+            // Initialize all fields
             HighPriceTrendType = highPriceTrendType;
             LowPriceTrendType = lowPriceTrendType;
             HighStartPeak = highStartPeak;
@@ -53,12 +79,14 @@ namespace cAlgo
             Intensity = intensity;
         }
 
+        // Override of the ToString method returning a representation useful in logs
         public override string ToString()
         {
-            return string.Format("HP {0}, LP {1}, start at index HP {2}, LP {3}, end at HP {4}, LP {5}",
+            return string.Format("Trend HP {0}, LP {1}, start at index HP {2}, LP {3}, end at HP {4}, LP {5}",
                 HighPriceTrendType, LowPriceTrendType, HighStartPeak.BarIndex, LowStartPeak.BarIndex, HighEndPeak.BarIndex, LowEndPeak.BarIndex);
         }
 
+        // TODO: following functions either obsolete or need reworking
         private void GetTrendType(double trendHeightThreshold)
         {
             HighPriceTrendType = GetTrendTypeBetweenPeaks(HighStartPeak, HighEndPeak, trendHeightThreshold);
@@ -78,6 +106,7 @@ namespace cAlgo
             return TrendType.Consolidation;
         }
 
+
         public bool HasSameTrendType(Trend other)
         {
             return HighPriceTrendType == other.HighPriceTrendType && LowPriceTrendType == other.LowPriceTrendType;
@@ -91,7 +120,7 @@ namespace cAlgo
                 (LowEndPeak == followingTrend.LowStartPeak && HighEndPeak == followingTrend.HighEndPeak);
             if (!trendFollows)
             {
-                throw new ArgumentException(this.ToString() + followingTrend.ToString());
+                throw new ArgumentException(string.Format("{0} does not follow {1}, so they cannot be merged.", followingTrend.ToString(), ToString()));
             }
             HighEndPeak = followingTrend.HighEndPeak;
             LowEndPeak = followingTrend.LowEndPeak;

@@ -62,7 +62,18 @@ namespace cAlgo.Robots
         #region Methods
         private void CreateLandscape()
         {
-            List<BaseLine> BaseLines = IdentifyLines(PeakSearchPeriod);
+            // Get all peaks with a given period
+            List<Peak> peaks= IdentifyPeaks(PeakSearchPeriod);
+            
+            // Find all trends corresponding to those peaks
+            List<Trend> trends = IdentifyTrends(peaks);
+
+            // Find all baselines corresponding to those trends
+            List<BaseLine> baseLines = IdentifyLines(peaks, trends);
+
+            //Visualize found trends and peaks
+            VisualizePeaks(peaks);
+            VisualizeTrendContours(trends);
 
             //Will be used to get multiple landscape layers with different line id periods
             /*foreach(int period in Periods)
@@ -73,154 +84,14 @@ namespace cAlgo.Robots
 
         #region IdentifyLines
 
-        private List<BaseLine> IdentifyLines(int period)
+        private List<BaseLine> IdentifyLines(List<Peak> peaks, List<Trend> trends)
         {
-            //Stores all found baseLines
-            List<BaseLine> BaseLines = new List<BaseLine>();
-
-            //Stores all peaks with a given period
-            List<Peak> Peaks;
-
-            //Find all peaks with a given period
-            Peaks = IdentifyPeaks(period);
-
-            //Find all trends corresponding to those peaks
-            List<Trend> Trends = IdentifyTrends(Peaks);
-
-            //Visualize found trends and peaks
-            VisualizePeaks(Peaks);
-            VisualizeTrendContours(Trends);
+            // Store all found baseLines
+            List<BaseLine> baseLines = new List<BaseLine>();
 
             //After finishing the logic
-            return BaseLines;
+            return baseLines;
         }
-        #endregion
-
-        #region IdentifyTrends
-
-        /// <summary>
-        /// Finds all trends between peaks in a given list
-        /// </summary>
-        /// <param name="peaks">A list of at least two high price and at least two low price Peaks bordering the trends</param>
-        /// <returns></returns>
-        private List<Trend> IdentifyTrends(List<Peak> peaks)
-        {
-            //Stores finally merged TrendSegments
-            List<Trend> Trends = new List<Trend>();
-
-            List<Trend> TrendSegments = GetTrendSegments(peaks);
-
-            return TrendSegments;
-
-            //TODO: What to do with short trend segemnts we have now?
-            /*
-            if(TrendSegments.Count == 1)
-            {
-                return TrendSegments;
-            }
-
-            Trends = MergeTrendSegments(TrendSegments);
-
-            //After finishing the logic
-            return Trends;
-            */
-        }
-
-        private List<Trend> MergeTrendSegments(List<Trend> trendSegments)
-        {
-            List<Trend> mergedTrends = new List<Trend>();
-
-            //Combine the short trends if they have the same type
-            Trend CurrentTrend = trendSegments[0];
-            trendSegments.RemoveAt(0);
-
-            foreach (Trend trend in trendSegments)
-            {
-                if (CurrentTrend.HasSameTrendType(trend))
-                {
-                    CurrentTrend.CombineWithFollowingTrend(trend);
-                }
-                else
-                {
-                    mergedTrends.Add(CurrentTrend);
-                    CurrentTrend = trend;
-                }
-            }
-
-            //Add the last checked trend
-            mergedTrends.Add(CurrentTrend);
-
-            return mergedTrends;
-        }
-
-        private List<Trend> GetTrendSegments(List<Peak> peaks)
-        {
-            List<Trend> TrendSegments = new List<Trend>();
-
-            double Threshold = trendIdThresholdPips * Symbol.PipSize;
-
-            Peak HighStartPeak;
-            Peak LowStartPeak;
-            Peak HighEndPeak;
-            Peak LowEndPeak;
-
-            List<Peak> HighPeaks = peaks.FindAll(peak => peak.FromHighPrice);
-            List<Peak> LowPeaks = peaks.FindAll(peak => !peak.FromHighPrice);
-
-            HighStartPeak = HighPeaks[0];
-            HighEndPeak = HighPeaks[1];
-            LowStartPeak = LowPeaks[0];
-            LowEndPeak = LowPeaks[1];
-
-            HighPeaks.RemoveRange(0, 2);
-            LowPeaks.RemoveRange(0, 2);
-
-            TrendSegments.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
-
-            while (HighPeaks.Count > 0 && LowPeaks.Count > 0)
-            {
-
-                if(HighEndPeak.BarIndex < LowEndPeak.BarIndex)
-                {
-                    HighStartPeak = HighEndPeak;
-                    HighEndPeak = HighPeaks[0];
-                    HighPeaks.RemoveAt(0);
-                }
-                else if(HighEndPeak.BarIndex > LowEndPeak.BarIndex)
-                {
-                    LowStartPeak = LowEndPeak;
-                    LowEndPeak = LowPeaks[0];
-                    LowPeaks.RemoveAt(0);
-                }
-                else
-                {
-                    HighStartPeak = HighEndPeak;
-                    HighEndPeak = HighPeaks[0];
-                    HighPeaks.RemoveAt(0);
-                    continue;
-                }
-
-                TrendSegments.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
-            }
-
-            while(HighPeaks.Count > 0)
-            {
-                HighStartPeak = HighEndPeak;
-                HighEndPeak = HighPeaks[0];
-                HighPeaks.RemoveAt(0);
-                TrendSegments.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
-            }
-            while (LowPeaks.Count > 0)
-            {
-                LowStartPeak = LowEndPeak;
-                LowEndPeak = LowPeaks[0];
-                LowPeaks.RemoveAt(0);
-                TrendSegments.Add(new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, Threshold));
-            }
-
-            return TrendSegments;
-        }
-
         #endregion
 
         //Functional region
@@ -234,16 +105,16 @@ namespace cAlgo.Robots
         private List<Peak> IdentifyPeaks(int period)
         {
             // Stores found peaks
-            List<Peak> FoundPeaks = new List<Peak>();
+            List<Peak> foundPeaks = new List<Peak>();
 
-            // For each index in Bars
+            // For each bar
             for (int index = 0; index < Bars.Count; index++)
             {
                 // Check if the bar at index is a maximum or minimum of high price in the specified period
                 // If so, it adds a new peak corresponding to it to found peaks
                 if (isHighPriceMaximum(index, period))
                 {
-                    FoundPeaks.Add(new Peak(
+                    foundPeaks.Add(new Peak(
                         fromHighPrice: true,
                         peakType: PeakType.Maximum, 
                         datetime: Bars.OpenTimes[index], 
@@ -253,7 +124,7 @@ namespace cAlgo.Robots
                 }
                 else if (isHighPriceMinimum(index, period))
                 {
-                    FoundPeaks.Add(new Peak(
+                    foundPeaks.Add(new Peak(
                         fromHighPrice: true,
                         peakType: PeakType.Minimum,
                         datetime: Bars.OpenTimes[index],
@@ -266,7 +137,7 @@ namespace cAlgo.Robots
                 // If so, it adds a new peak corresponding to it to found peaks
                 if (isLowPriceMaximum(index, period))
                 {
-                    FoundPeaks.Add(new Peak(
+                    foundPeaks.Add(new Peak(
                         fromHighPrice: false,
                         peakType: PeakType.Maximum,
                         datetime: Bars.OpenTimes[index],
@@ -276,7 +147,7 @@ namespace cAlgo.Robots
                 }
                 else if (isLowPriceMinimum(index, period))
                 {
-                    FoundPeaks.Add(new Peak(
+                    foundPeaks.Add(new Peak(
                         fromHighPrice: false,
                         peakType: PeakType.Minimum,
                         datetime: Bars.OpenTimes[index],
@@ -288,9 +159,9 @@ namespace cAlgo.Robots
 
             // For trend search, there should be a high and low price peak at first and last bar
             // If there is no high price peak at the beginning of Bars series, add a peak corresponding to first bar high price
-            if(FoundPeaks.Find(peak => peak.FromHighPrice).BarIndex != 0)
+            if(foundPeaks.Find(peak => peak.FromHighPrice).BarIndex != 0)
             {
-                FoundPeaks.Insert(0, new Peak(
+                foundPeaks.Insert(0, new Peak(
                     fromHighPrice: true,
                     peakType: (Bars.HighPrices[0] > Bars.HighPrices[1]) ? PeakType.Maximum : PeakType.Minimum,
                     datetime: Bars.OpenTimes[0],
@@ -300,9 +171,9 @@ namespace cAlgo.Robots
             }
 
             // If there is no low price peak at the beginning of Bars series, add a peak corresponding to first bar low price
-            if (FoundPeaks.Find(peak => !peak.FromHighPrice).BarIndex != 0)
+            if (foundPeaks.Find(peak => !peak.FromHighPrice).BarIndex != 0)
             {
-                FoundPeaks.Insert(0, new Peak(
+                foundPeaks.Insert(0, new Peak(
                     fromHighPrice: false,
                     peakType: (Bars.LowPrices[0] > Bars.LowPrices[1]) ? PeakType.Maximum : PeakType.Minimum,
                     datetime: Bars.OpenTimes[0],
@@ -312,9 +183,9 @@ namespace cAlgo.Robots
             }
 
             // If there is no high price peak at the end of Bars series, add a peak corresponding to last bar high price
-            if (FoundPeaks.FindLast(peak => peak.FromHighPrice).BarIndex != Bars.Count - 1)
+            if (foundPeaks.FindLast(peak => peak.FromHighPrice).BarIndex != Bars.Count - 1)
             {
-                FoundPeaks.Add(new Peak(
+                foundPeaks.Add(new Peak(
                     fromHighPrice: true,
                     peakType: (Bars.HighPrices.LastValue > Bars.HighPrices.Last(1)) ? PeakType.Maximum : PeakType.Minimum,
                     datetime: Bars.OpenTimes.LastValue,
@@ -324,9 +195,9 @@ namespace cAlgo.Robots
             }
 
             // If there is no low price peak at the end of Bars series, add a peak corresponding to last bar low price
-            if (FoundPeaks.FindLast(peak => !peak.FromHighPrice).BarIndex != Bars.Count - 1)
+            if (foundPeaks.FindLast(peak => !peak.FromHighPrice).BarIndex != Bars.Count - 1)
             {
-                FoundPeaks.Add(new Peak(
+                foundPeaks.Add(new Peak(
                     fromHighPrice: false,
                     peakType: (Bars.LowPrices.LastValue > Bars.LowPrices.Last(1)) ? PeakType.Maximum : PeakType.Minimum,
                     datetime: Bars.OpenTimes.LastValue,
@@ -336,7 +207,7 @@ namespace cAlgo.Robots
             }
 
             // Return all found peaks
-            return FoundPeaks;
+            return foundPeaks;
         }
 
         /// <summary>
@@ -405,7 +276,155 @@ namespace cAlgo.Robots
         }
         #endregion
 
-        #region Visualization
+        #region IdentifyTrends
+
+        /// <summary>
+        /// Finds all trends between peaks in a given list
+        /// </summary>
+        /// <param name="peaks">A list of at least two high price and at least two low price Peaks bordering the trends</param>
+        /// <returns></returns>
+        private List<Trend> IdentifyTrends(List<Peak> peaks)
+        {
+            //Stores finally merged TrendSegments
+            List<Trend> trends = new List<Trend>();
+
+            List<Trend> trendSegments = GetTrendSegments(peaks);
+
+            return trendSegments;
+
+            //TODO: What to do with short trend segemnts we have now?
+            /*
+            if(TrendSegments.Count == 1)
+            {
+                return TrendSegments;
+            }
+
+            Trends = MergeTrendSegments(TrendSegments);
+
+            //After finishing the logic
+            return Trends;
+            */
+        }
+
+        private List<Trend> MergeTrendSegments(List<Trend> trendSegments)
+        {
+            List<Trend> mergedTrends = new List<Trend>();
+
+            //Combine the short trends if they have the same type
+            Trend currentTrend = trendSegments[0];
+            trendSegments.RemoveAt(0);
+
+            foreach (Trend trend in trendSegments)
+            {
+                if (currentTrend.HasSameTrendType(trend))
+                {
+                    currentTrend.CombineWithFollowingTrend(trend);
+                }
+                else
+                {
+                    mergedTrends.Add(currentTrend);
+                    currentTrend = trend;
+                }
+            }
+
+            //Add the last checked trend
+            mergedTrends.Add(currentTrend);
+
+            return mergedTrends;
+        }
+
+        /// <summary>
+        /// Finds all shortest possible trends between peaks in a given list
+        /// </summary>
+        /// <param name="peaks">List of peaks bordering the serched trends</param>
+        /// <returns>List of all found trends</returns>
+        private List<Trend> GetTrendSegments(List<Peak> peaks)
+        {
+            // Store found short trends
+            List<Trend> trendSegments = new List<Trend>();
+
+            // Calculate the price threshold for trendType identification
+            // TODO: obsolete soon
+            double threshold = trendIdThresholdPips * Symbol.PipSize;
+
+            // Four peaks bordering the current trend reading frame
+            // It has the high- and low-price component, each bordered by two peaks
+            Peak highStartPeak;
+            Peak lowStartPeak;
+            Peak highEndPeak;
+            Peak lowEndPeak;
+
+            // Split the input list into High- and low-price peaks
+            List<Peak> highPeaks = peaks.FindAll(peak => peak.FromHighPrice);
+            List<Peak> lowPeaks = peaks.FindAll(peak => !peak.FromHighPrice);
+
+            // Assign the first four peaks into the reading frame
+            highStartPeak = highPeaks[0];
+            highEndPeak = highPeaks[1];
+            lowStartPeak = lowPeaks[0];
+            lowEndPeak = lowPeaks[1];
+
+            // Remove those four peaks from the lists
+            highPeaks.RemoveRange(0, 2);
+            lowPeaks.RemoveRange(0, 2);
+
+            // Store the first trend
+            trendSegments.Add(new Trend(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, threshold, this));
+
+            // While there are uninvestigated high- and low-price peaks left
+            while (highPeaks.Count > 0 && lowPeaks.Count > 0)
+            {
+                // If the low-price component of the reading frame is further, advance the high-price component
+                if (highEndPeak.BarIndex < lowEndPeak.BarIndex)
+                {
+                    highStartPeak = highEndPeak;
+                    highEndPeak = highPeaks[0];
+                    highPeaks.RemoveAt(0);
+                }
+                // If the high-price component of the reading frame is further, advance the low-price component
+                else if (highEndPeak.BarIndex > lowEndPeak.BarIndex)
+                {
+                    lowStartPeak = lowEndPeak;
+                    lowEndPeak = lowPeaks[0];
+                    lowPeaks.RemoveAt(0);
+                }
+                // Otherwise they must end at the same spot, so advance high-price component
+                // But do not save a trend, as there is no overlap between the components
+                else
+                {
+                    highStartPeak = highEndPeak;
+                    highEndPeak = highPeaks[0];
+                    highPeaks.RemoveAt(0);
+                    continue;
+                }
+
+                // Save the trend in the new reading frame
+                trendSegments.Add(new Trend(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, threshold, this));
+            }
+
+            // If there are high-price peaks left, move the high-component over them and save the last trends
+            while(highPeaks.Count > 0)
+            {
+                highStartPeak = highEndPeak;
+                highEndPeak = highPeaks[0];
+                highPeaks.RemoveAt(0);
+                trendSegments.Add(new Trend(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, threshold, this));
+            }
+
+            // If there are low-price peaks left, move the low-component over them and save the last trends
+            while (lowPeaks.Count > 0)
+            {
+                lowStartPeak = lowEndPeak;
+                lowEndPeak = lowPeaks[0];
+                lowPeaks.RemoveAt(0);
+                trendSegments.Add(new Trend(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, threshold, this));
+            }
+
+            // Return all found trends
+            return trendSegments;
+        }
+
+        #endregion
 
         //Functional region
         #region VisualizePeaks
@@ -464,6 +483,7 @@ namespace cAlgo.Robots
 
         #endregion
 
+
         #region VisualizeTrends
 
         /// <summary>
@@ -474,12 +494,12 @@ namespace cAlgo.Robots
         {
             foreach(Trend trend in trends)
             {
-                Color HighPriceColor = GetTrendLineColor(trend.HighPriceTrendType);
-                Color LowPriceColor = GetTrendLineColor(trend.LowPriceTrendType);
+                Color highPriceColor = GetTrendLineColor(trend.HighPriceTrendType);
+                Color lowPriceColor = GetTrendLineColor(trend.LowPriceTrendType);
 
 
-                DrawLineBetweenPeaks(trend.HighStartPeak, trend.HighEndPeak, HighPriceColor);
-                DrawLineBetweenPeaks(trend.LowStartPeak, trend.LowEndPeak, LowPriceColor);
+                DrawLineBetweenPeaks(trend.HighStartPeak, trend.HighEndPeak, highPriceColor);
+                DrawLineBetweenPeaks(trend.LowStartPeak, trend.LowEndPeak, lowPriceColor);
 
                 Print(trend);
             }
@@ -505,7 +525,6 @@ namespace cAlgo.Robots
         }
         #endregion
 
-        #endregion
 
         private void CreateConditions()
         {
