@@ -43,7 +43,7 @@ namespace cAlgo
         // How important the trend is
         public double Intensity;
 
-        // Access to the Algo API for methods
+        // Access to the Algo API
         private Algo AlgoAPI;
         
         // General constructor taking four bordering peaks and the Algo API
@@ -86,6 +86,42 @@ namespace cAlgo
                 HighPriceTrendType, LowPriceTrendType, HighStartPeak.BarIndex, LowStartPeak.BarIndex, HighEndPeak.BarIndex, LowEndPeak.BarIndex);
         }
 
+
+        /// <summary>
+        /// Draws the contours of the trend on the active chart as colored lines
+        /// </summary>
+        public void VisualizeContours()
+        {
+            Color highPriceColor = GetTrendLineColor(HighPriceTrendType);
+            Color lowPriceColor = GetTrendLineColor(LowPriceTrendType);
+
+
+            DrawLineBetweenPeaks(HighStartPeak, HighEndPeak, highPriceColor);
+            DrawLineBetweenPeaks(LowStartPeak, LowEndPeak, lowPriceColor);
+
+            AlgoAPI.Print(ToString());
+
+        }
+
+        private Color GetTrendLineColor(TrendType trendType)
+        {
+            switch (trendType)
+            {
+                case TrendType.Uptrend:
+                    return Color.Green;
+                case TrendType.Downtrend:
+                    return Color.Red;
+                default:
+                    return Color.Yellow;
+            }
+        }
+
+        private void DrawLineBetweenPeaks(Peak startPeak, Peak endPeak, Color color)
+        {
+            string name = string.Format("{0}_{1}_to_{2}_{3}_trend", startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price);
+            AlgoAPI.Chart.DrawTrendLine(name, startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price, color);
+        }
+
         // TODO: following functions either obsolete or need reworking
         private void GetTrendType(double trendHeightThreshold)
         {
@@ -105,7 +141,6 @@ namespace cAlgo
             }
             return TrendType.Consolidation;
         }
-
 
         public bool HasSameTrendType(Trend other)
         {

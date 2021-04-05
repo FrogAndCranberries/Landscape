@@ -73,7 +73,7 @@ namespace cAlgo.Robots
 
             //Visualize found trends and peaks
             VisualizePeaks(peaks);
-            VisualizeTrendContours(trends);
+            VisualizeTrendsContours(trends);
 
             //Will be used to get multiple landscape layers with different line id periods
             /*foreach(int period in Periods)
@@ -107,6 +107,7 @@ namespace cAlgo.Robots
             // Stores found peaks
             List<Peak> foundPeaks = new List<Peak>();
 
+            // TODO: split new peak creation and foundPeaks.add
             // For each bar
             for (int index = 0; index < Bars.Count; index++)
             {
@@ -120,7 +121,8 @@ namespace cAlgo.Robots
                         datetime: Bars.OpenTimes[index], 
                         barIndex: index, 
                         price: Bars.HighPrices[index], 
-                        sourcePeriod: period));
+                        sourcePeriod: period,
+                        algoAPI: this));
                 }
                 else if (isHighPriceMinimum(index, period))
                 {
@@ -130,7 +132,8 @@ namespace cAlgo.Robots
                         datetime: Bars.OpenTimes[index],
                         barIndex: index,
                         price: Bars.HighPrices[index],
-                        sourcePeriod: period));
+                        sourcePeriod: period,
+                        algoAPI: this));
                 }
 
                 // Check if the bar at index is a maximum or minimum of low price in the specified period
@@ -143,7 +146,8 @@ namespace cAlgo.Robots
                         datetime: Bars.OpenTimes[index],
                         barIndex: index,
                         price: Bars.LowPrices[index],
-                        sourcePeriod: period));
+                        sourcePeriod: period,
+                        algoAPI: this));
                 }
                 else if (isLowPriceMinimum(index, period))
                 {
@@ -153,7 +157,8 @@ namespace cAlgo.Robots
                         datetime: Bars.OpenTimes[index],
                         barIndex: index,
                         price: Bars.LowPrices[index],
-                        sourcePeriod: period));
+                        sourcePeriod: period,
+                        algoAPI: this));
                 }
             }
 
@@ -167,7 +172,8 @@ namespace cAlgo.Robots
                     datetime: Bars.OpenTimes[0],
                     barIndex: 0,
                     price: Bars.HighPrices[0],
-                    sourcePeriod: period));
+                    sourcePeriod: period,
+                    algoAPI: this));
             }
 
             // If there is no low price peak at the beginning of Bars series, add a peak corresponding to first bar low price
@@ -179,7 +185,8 @@ namespace cAlgo.Robots
                     datetime: Bars.OpenTimes[0],
                     barIndex: 0,
                     price: Bars.LowPrices[0],
-                    sourcePeriod: period));
+                    sourcePeriod: period,
+                    algoAPI: this));
             }
 
             // If there is no high price peak at the end of Bars series, add a peak corresponding to last bar high price
@@ -191,7 +198,8 @@ namespace cAlgo.Robots
                     datetime: Bars.OpenTimes.LastValue,
                     barIndex: Bars.Count - 1,
                     price: Bars.HighPrices.LastValue,
-                    sourcePeriod: period));
+                    sourcePeriod: period,
+                    algoAPI: this));
             }
 
             // If there is no low price peak at the end of Bars series, add a peak corresponding to last bar low price
@@ -203,7 +211,8 @@ namespace cAlgo.Robots
                     datetime: Bars.OpenTimes.LastValue,
                     barIndex: Bars.Count - 1,
                     price: Bars.LowPrices.LastValue,
-                    sourcePeriod: period));
+                    sourcePeriod: period,
+                    algoAPI: this));
             }
 
             // Return all found peaks
@@ -429,99 +438,24 @@ namespace cAlgo.Robots
         //Functional region
         #region VisualizePeaks
 
-        /// <summary>
-        /// Draws all peaks in the list on the active chart as colored dots
-        /// </summary>
-        /// <param name="peaks">List of peaks to be shown</param>
         private void VisualizePeaks(List<Peak> peaks)
         {
             foreach(Peak peak in peaks)
             {
-                //Determine the color of the peak
-                Color peakColor = GetPeakColor(peak);
-                //The peak has a unique name in the format DateTime_high or DateTime_low
-                string name = peak.DateTime.ToString() + (peak.FromHighPrice ? "_high" : "_low") + "_peak";
-                //Draw the peak on the chart
-                Chart.DrawIcon(name, ChartIconType.Circle, peak.DateTime, peak.Price, peakColor);
-                Print(peak);
+                peak.Visualize();
             }
-        }
-
-        /// <summary>
-        /// Determines the color of a dot visualising a given peak
-        /// </summary>
-        /// <param name="peak">Peak whose color is determined</param>
-        /// <returns></returns>
-        private Color GetPeakColor(Peak peak)
-        {
-            if (peak.FromHighPrice)
-            {
-                switch (peak.PeakType)
-                {
-                    case PeakType.Maximum:
-                        //High price maximum is green
-                        return Color.Green;
-                    default:
-                        //High price minimum is yellow
-                        return Color.Yellow;
-                }
-            }
-            else
-            {
-                switch (peak.PeakType)
-                {
-                    case PeakType.Maximum:
-                        //Low price maximum is orange
-                        return Color.Orange;
-                    default:
-                        //Low price minimum is red
-                        return Color.Red;
-                }
-            }
-            
         }
 
         #endregion
 
 
         #region VisualizeTrends
-
-        /// <summary>
-        /// Draws the contours of the trends on the active chart as colored lines
-        /// </summary>
-        /// <param name="trends">List of trends to be shown</param>
-        private void VisualizeTrendContours(List<Trend> trends)
+        private void VisualizeTrendsContours(List<Trend> trends)
         {
             foreach(Trend trend in trends)
             {
-                Color highPriceColor = GetTrendLineColor(trend.HighPriceTrendType);
-                Color lowPriceColor = GetTrendLineColor(trend.LowPriceTrendType);
-
-
-                DrawLineBetweenPeaks(trend.HighStartPeak, trend.HighEndPeak, highPriceColor);
-                DrawLineBetweenPeaks(trend.LowStartPeak, trend.LowEndPeak, lowPriceColor);
-
-                Print(trend);
+                trend.VisualizeContours();
             }
-        }
-
-        private Color GetTrendLineColor(TrendType trendType)
-        {
-            switch (trendType)
-            {
-                case TrendType.Uptrend:
-                    return Color.Green;
-                case TrendType.Downtrend:
-                    return Color.Red;
-                default:
-                    return Color.Yellow;
-            }
-        }
-
-        private void DrawLineBetweenPeaks(Peak startPeak, Peak endPeak, Color color)
-        {
-            string name = string.Format("{0}_{1}_to_{2}_{3}_trend", startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price);
-            Chart.DrawTrendLine(name, startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price, color);
         }
         #endregion
 
