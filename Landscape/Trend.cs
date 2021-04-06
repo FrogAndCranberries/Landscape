@@ -68,21 +68,6 @@ namespace cAlgo
             GetTrendType(trendHeightThreshold);
         }
 
-        // Specific constructor to create a custom trend with all fields
-        public Trend(TrendType highPriceTrendType, TrendType lowPriceTrendType,
-            Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak,
-            int sourcePeakPeriod, double intensity = 1)
-        {
-            HighPriceTrendType = highPriceTrendType;
-            LowPriceTrendType = lowPriceTrendType;
-            HighStartPeak = highStartPeak;
-            LowStartPeak = lowStartPeak;
-            HighEndPeak = highEndPeak;
-            LowEndPeak = lowEndPeak;
-            SourcePeakPeriod = sourcePeakPeriod;
-            Intensity = intensity;
-        }
-
         public override string ToString()
         {
             return string.Format("Trend HP {0}, LP {1}, start at index HP {2}, LP {3}, end at HP {4}, LP {5}",
