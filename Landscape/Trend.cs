@@ -84,7 +84,24 @@ namespace cAlgo
 
             Tuple<double, double> lineCoefficients = Fit.Line(coreDateTimes, corePrices);
 
-            return new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd);
+            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd);
+
+            return highTrendLine;
+        }
+
+        public TrendLine GetLowTrendLine()
+        {
+            int[] coreBarsIndices = Generate.LinearRangeInt32(CoreStartIndex, CoreEndIndex);
+
+            double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.LowPrices[index]).ToArray();
+
+            double[] coreDateTimes = coreBarsIndices.Select(index => DateTimeTicksAtBarIndex(index)).ToArray();
+
+            Tuple<double, double> lineCoefficients = Fit.Line(coreDateTimes, corePrices);
+
+            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd);
+
+            return lowTrendLine;
         }
 
         private double DateTimeTicksAtBarIndex(int index)
@@ -95,21 +112,6 @@ namespace cAlgo
 
             return Convert.ToDouble(openTimeInTicks);
         }
-
-
-        public TrendLine GetLowTrendLine()
-        {
-            int coreStartIndex = HighStartPeak.BarIndex > LowStartPeak.BarIndex ? HighStartPeak.BarIndex : LowStartPeak.BarIndex;
-            int coreEndIndex = HighEndPeak.BarIndex < LowEndPeak.BarIndex ? HighEndPeak.BarIndex : LowEndPeak.BarIndex;
-
-            int[] indices = Generate.LinearRangeInt32(coreStartIndex, coreEndIndex);
-            double[] prices = indices.Select(index => AlgoAPI.Bars.HighPrices[index]).ToArray();
-            double[] dateTimes = indices.Select(index => (double)AlgoAPI.Bars.OpenTimes[index].Ticks).ToArray();
-            Tuple<double, double> result = Fit.Line(dateTimes, prices);
-
-            return new TrendLine(result.Item2, result.Item1, AlgoAPI.Bars.OpenTimes[coreStartIndex], AlgoAPI.Bars.OpenTimes[coreEndIndex]);
-        }
-            
 
         #region Visualization
         /// <summary>
