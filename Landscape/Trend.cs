@@ -15,33 +15,29 @@ namespace cAlgo
     /// </summary>
     class Trend
     {
-        // The four peaks bordering the high price and low price segments contained in the trend
         public Peak HighStartPeak;
         public Peak LowStartPeak;
         public Peak HighEndPeak;
         public Peak LowEndPeak;
+
+        private int CoreStartIndex;
+        private int CoreEndIndex;
+
+        private DateTime CoreStart;
+        private DateTime CoreEnd;
+
 
         // The type of the trend in high- and low- price segment
         // TODO: will be replaced by a double in interval(-1,1)
         public TrendType HighPriceTrendType;
         public TrendType LowPriceTrendType;
 
-        // Length of the trend core (high and low price segment overlap) in bars
-        public int LengthInBars;
+        public TimeSpan CoreLength;
 
-        // Price difference between highest and lowest bordering peak
-        // BS if trend is a triangle, channel or so
-        public double Height;
+        public int CoreLengthInBars;
 
-        // The PeakSearchPeriod at which the peaks bordering the trend were identified
-        public int SourcePeriod;
+        public int SourcePeakPeriod;
 
-        // The gradient of the low- and high- price change per bar in respective segments
-        // Ratio of (price change)/(number of bars in segment)
-        public double HighPriceGradient;
-        public double LowPriceGradient;
-
-        // How important the trend is
         public double Intensity;
 
         // Access to the Algo API
@@ -50,16 +46,24 @@ namespace cAlgo
         // General constructor taking four bordering peaks and the Algo API
         public Trend(Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double trendHeightThreshold, Algo algoAPI)
         {
-            // Initialize the bordering peaks
             HighStartPeak = highStartPeak;
             LowStartPeak = lowStartPeak;
             HighEndPeak = highEndPeak;
             LowEndPeak = lowEndPeak;
-
-            // Initialize the algo API object
             AlgoAPI = algoAPI;
 
-            // Set the type of the high and low price trend
+            Peak coreStartPeak = HighStartPeak.BarIndex > LowStartPeak.BarIndex ? HighStartPeak : LowStartPeak;
+            Peak coreEndPeak = HighEndPeak.BarIndex < LowEndPeak.BarIndex ? HighEndPeak : LowEndPeak;
+
+            CoreStart = coreStartPeak.DateTime;
+            CoreEnd = coreEndPeak.DateTime;
+
+            CoreStartIndex = coreStartPeak.BarIndex;
+            CoreEndIndex = coreEndPeak.BarIndex;
+
+            CoreLength = CoreEnd - CoreStart;
+            CoreLengthInBars = CoreEndIndex - CoreStartIndex;
+
             // TODO: To be changed to a double, also wont need a threshold. Add a source period check and assignment
             GetTrendType(trendHeightThreshold);
         }
@@ -67,20 +71,18 @@ namespace cAlgo
         // Specific constructor to create a custom trend with all fields
         public Trend(TrendType highPriceTrendType, TrendType lowPriceTrendType,
             Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak,
-            int sourcePeriod, double intensity = 1)
+            int sourcePeakPeriod, double intensity = 1)
         {
-            // Initialize all fields
             HighPriceTrendType = highPriceTrendType;
             LowPriceTrendType = lowPriceTrendType;
             HighStartPeak = highStartPeak;
             LowStartPeak = lowStartPeak;
             HighEndPeak = highEndPeak;
             LowEndPeak = lowEndPeak;
-            SourcePeriod = sourcePeriod;
+            SourcePeakPeriod = sourcePeakPeriod;
             Intensity = intensity;
         }
 
-        // Override of the ToString method returning a representation useful in logs
         public override string ToString()
         {
             return string.Format("Trend HP {0}, LP {1}, start at index HP {2}, LP {3}, end at HP {4}, LP {5}",
@@ -88,14 +90,6 @@ namespace cAlgo
         }
 
         public TrendLine GetHighTrendLine()
-        { 
-
-            TrendLine trendLine = FitHighPriceWithLine();
-
-            return trendLine;
-        }
-
-        private TrendLine FitHighPriceWithLine()
         {
             int coreStartIndex = HighStartPeak.BarIndex > LowStartPeak.BarIndex ? HighStartPeak.BarIndex : LowStartPeak.BarIndex;
             int coreEndIndex = HighEndPeak.BarIndex < LowEndPeak.BarIndex ? HighEndPeak.BarIndex : LowEndPeak.BarIndex;
@@ -107,6 +101,21 @@ namespace cAlgo
 
             return new TrendLine(result.Item2, result.Item1, AlgoAPI.Bars.OpenTimes[coreStartIndex], AlgoAPI.Bars.OpenTimes[coreEndIndex]);
         }
+
+
+        public TrendLine GetLowTrendLine()
+        {
+            int coreStartIndex = HighStartPeak.BarIndex > LowStartPeak.BarIndex ? HighStartPeak.BarIndex : LowStartPeak.BarIndex;
+            int coreEndIndex = HighEndPeak.BarIndex < LowEndPeak.BarIndex ? HighEndPeak.BarIndex : LowEndPeak.BarIndex;
+
+            int[] indices = Generate.LinearRangeInt32(coreStartIndex, coreEndIndex);
+            double[] prices = indices.Select(index => AlgoAPI.Bars.HighPrices[index]).ToArray();
+            double[] dateTimes = indices.Select(index => (double)AlgoAPI.Bars.OpenTimes[index].Ticks).ToArray();
+            Tuple<double, double> result = Fit.Line(dateTimes, prices);
+
+            return new TrendLine(result.Item2, result.Item1, AlgoAPI.Bars.OpenTimes[coreStartIndex], AlgoAPI.Bars.OpenTimes[coreEndIndex]);
+        }
+            
 
         #region Visualization
         /// <summary>
