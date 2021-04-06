@@ -76,15 +76,24 @@ namespace cAlgo
 
         public TrendLine GetHighTrendLine()
         {
-            int coreStartIndex = HighStartPeak.BarIndex > LowStartPeak.BarIndex ? HighStartPeak.BarIndex : LowStartPeak.BarIndex;
-            int coreEndIndex = HighEndPeak.BarIndex < LowEndPeak.BarIndex ? HighEndPeak.BarIndex : LowEndPeak.BarIndex;
+            int[] coreBarsIndices = Generate.LinearRangeInt32(CoreStartIndex, CoreEndIndex);
 
-            int[] indices = Generate.LinearRangeInt32(coreStartIndex, coreEndIndex);
-            double[] prices = indices.Select(index => AlgoAPI.Bars.HighPrices[index]).ToArray();
-            double[] dateTimes = indices.Select(index => (double)AlgoAPI.Bars.OpenTimes[index].Ticks).ToArray();
-            Tuple<double, double> result = Fit.Line(dateTimes, prices);
+            double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.HighPrices[index]).ToArray();
 
-            return new TrendLine(result.Item2, result.Item1, AlgoAPI.Bars.OpenTimes[coreStartIndex], AlgoAPI.Bars.OpenTimes[coreEndIndex]);
+            double[] coreDateTimes = coreBarsIndices.Select(index => DateTimeTicksAtBarIndex(index)).ToArray();
+
+            Tuple<double, double> lineCoefficients = Fit.Line(coreDateTimes, corePrices);
+
+            return new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd);
+        }
+
+        private double DateTimeTicksAtBarIndex(int index)
+        {
+            DateTime openTime = AlgoAPI.Bars.OpenTimes[index];
+
+            long openTimeInTicks = openTime.Ticks;
+
+            return Convert.ToDouble(openTimeInTicks);
         }
 
 
