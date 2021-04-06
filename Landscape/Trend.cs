@@ -88,20 +88,24 @@ namespace cAlgo
         }
 
         public TrendLine GetHighTrendLine()
-        {
-            TrendLine trendLine = new TrendLine();
+        { 
 
-            int coreStartIndex = Math.Max(HighStartPeak.BarIndex, LowStartPeak.BarIndex);
-            int coreEndIndex = Math.Min(HighEndPeak.BarIndex, LowEndPeak.BarIndex);
-
-            trendLine = FitHighPriceWithLine(coreStartIndex, coreEndIndex);
+            TrendLine trendLine = FitHighPriceWithLine();
 
             return trendLine;
         }
 
-        private TrendLine FitHighPriceWithLine(int startIndex, int endIndex)
+        private TrendLine FitHighPriceWithLine()
         {
-            return new TrendLine();
+            int coreStartIndex = HighStartPeak.BarIndex > LowStartPeak.BarIndex ? HighStartPeak.BarIndex : LowStartPeak.BarIndex;
+            int coreEndIndex = HighEndPeak.BarIndex < LowEndPeak.BarIndex ? HighEndPeak.BarIndex : LowEndPeak.BarIndex;
+
+            int[] indices = Generate.LinearRangeInt32(coreStartIndex, coreEndIndex);
+            double[] prices = indices.Select(index => AlgoAPI.Bars.HighPrices[index]).ToArray();
+            double[] dateTimes = indices.Select(index => (double)AlgoAPI.Bars.OpenTimes[index].Ticks).ToArray();
+            Tuple<double, double> result = Fit.Line(dateTimes, prices);
+
+            return new TrendLine(result.Item2, result.Item1, AlgoAPI.Bars.OpenTimes[coreStartIndex], AlgoAPI.Bars.OpenTimes[coreEndIndex]);
         }
 
         #region Visualization

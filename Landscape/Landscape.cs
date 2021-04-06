@@ -62,18 +62,15 @@ namespace cAlgo.Robots
         #region Methods
         private void CreateLandscape()
         {
-            // Get all peaks with a given period
             List<Peak> peaks= IdentifyPeaks(PeakSearchPeriod);
             
-            // Find all trends corresponding to those peaks
             List<Trend> trends = IdentifyTrends(peaks);
 
-            // Find all baselines corresponding to those trends
-            List<BaseLine> baseLines = IdentifyLines(peaks, trends);
+            List<IResistanceLine> baseLines = IdentifyLines(peaks, trends);
 
-            //Visualize found trends and peaks
             VisualizePeaks(peaks);
-            VisualizeTrendsContours(trends);
+            //VisualizeTrendsContours(trends);
+            VisualizeBaseLines(baseLines);
 
             //Will be used to get multiple landscape layers with different line id periods
             /*foreach(int period in Periods)
@@ -84,17 +81,19 @@ namespace cAlgo.Robots
 
         #region IdentifyLines
 
-        private List<BaseLine> IdentifyLines(List<Peak> peaks, List<Trend> trends)
+        private List<IResistanceLine> IdentifyLines(List<Peak> peaks, List<Trend> trends)
         {
-            // Store all found baseLines
-            List<BaseLine> baseLines = new List<BaseLine>();
+            List<IResistanceLine> baseLines = new List<IResistanceLine>();
 
-            //After finishing the logic
+            foreach(Trend trend in trends)
+            {
+                baseLines.Add(trend.GetHighTrendLine());
+            }
+
             return baseLines;
         }
         #endregion
 
-        //Functional region
         #region IdentifyPeaks
 
         /// <summary>
@@ -435,9 +434,6 @@ namespace cAlgo.Robots
 
         #endregion
 
-        //Functional region
-        #region VisualizePeaks
-
         private void VisualizePeaks(List<Peak> peaks)
         {
             foreach(Peak peak in peaks)
@@ -446,10 +442,6 @@ namespace cAlgo.Robots
             }
         }
 
-        #endregion
-
-
-        #region VisualizeTrends
         private void VisualizeTrendsContours(List<Trend> trends)
         {
             foreach(Trend trend in trends)
@@ -457,7 +449,14 @@ namespace cAlgo.Robots
                 trend.VisualizeContours();
             }
         }
-        #endregion
+
+        private void VisualizeBaseLines(List<IResistanceLine> baseLines)
+        {
+            foreach(IResistanceLine baseLine in baseLines)
+            {
+                baseLine.Visualize(Chart);
+            }
+        }
 
 
         private void CreateConditions()
