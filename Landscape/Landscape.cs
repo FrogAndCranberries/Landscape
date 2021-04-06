@@ -66,11 +66,11 @@ namespace cAlgo.Robots
             
             List<Trend> trends = IdentifyTrends(peaks);
 
-            List<IResistanceLine> baseLines = IdentifyLines(peaks, trends);
+            List<IResistanceLine> resistanceLines = IdentifyLines(peaks, trends);
 
             VisualizePeaks(peaks);
             //VisualizeTrendsContours(trends);
-            VisualizeBaseLines(baseLines);
+            VisualizeResistanceLines(resistanceLines);
 
             //Will be used to get multiple landscape layers with different line id periods
             /*foreach(int period in Periods)
@@ -83,14 +83,15 @@ namespace cAlgo.Robots
 
         private List<IResistanceLine> IdentifyLines(List<Peak> peaks, List<Trend> trends)
         {
-            List<IResistanceLine> baseLines = new List<IResistanceLine>();
+            List<IResistanceLine> resistanceLines = new List<IResistanceLine>();
 
             foreach(Trend trend in trends)
             {
-                baseLines.Add(trend.GetHighTrendLine());
+                resistanceLines.Add(trend.GetHighTrendLine());
+                resistanceLines.Add(trend.GetLowTrendLine());
             }
 
-            return baseLines;
+            return resistanceLines;
         }
         #endregion
 
@@ -450,11 +451,12 @@ namespace cAlgo.Robots
             }
         }
 
-        private void VisualizeBaseLines(List<IResistanceLine> baseLines)
+        private void VisualizeResistanceLines(List<IResistanceLine> resistanceLines)
         {
-            foreach(IResistanceLine baseLine in baseLines)
+            foreach(IResistanceLine resistanceLine in resistanceLines)
             {
-                baseLine.Visualize(Chart);
+                resistanceLine.Visualize(Chart);
+                Print((resistanceLine as TrendLine).SlopeConstant);
             }
         }
 
