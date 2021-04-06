@@ -220,27 +220,33 @@ namespace cAlgo.Robots
         }
 
         /// <summary>
-        /// Returns true if High price of bar at centralIndex is the maximum within given period before and after it
+        /// Returns true if High price of the bar at centralIndex is the maximum within a given period before and after it
+        /// If there are more bars with the same maximum value, only the first returns true
         /// </summary>
-        /// <param name="centralIndex"></param>
-        /// <param name="period">Period to check before and after centralIndex</param>
+        /// <param name="centralIndex">Index of the checked bar</param>
+        /// <param name="period">Number of bars to check before and after centralIndex</param>
         /// <returns></returns>
         public bool isHighPriceMaximum(int centralIndex, int period)
         {
-
-            // Checks if there aren't any high price values higher than value at centralIndex in the period around it
             for (int i = centralIndex - period; i < centralIndex + period; i++)
             {
                 if (Bars.HighPrices[centralIndex] < Bars.HighPrices[i]) return false;
             }
+
+            for(int i = centralIndex - period; i < centralIndex; i++)
+            {
+                if (Bars.HighPrices[centralIndex] == Bars.HighPrices[i]) return false;
+            }
+
             return true;
         }
 
         /// <summary>
-        /// Returns true if High Price of bar at centralIndex is the minimum within given period before and after it
+        /// Returns true if High price of the bar at centralIndex is the minimum within a given period before and after it
+        /// If there are more bars with the same minimum value, only the first returns true
         /// </summary>
-        /// <param name="centralIndex"></param>
-        /// <param name="period">Period to check before and after centralIndex</param>
+        /// <param name="centralIndex">Index of the checked bar</param>
+        /// <param name="period">Number of bars to check before and after centralIndex</param>
         /// <returns></returns>
         public bool isHighPriceMinimum(int centralIndex, int period)
         {
@@ -249,14 +255,21 @@ namespace cAlgo.Robots
             {
                 if (Bars.HighPrices[centralIndex] > Bars.HighPrices[i]) return false;
             }
+
+            for (int i = centralIndex - period; i < centralIndex; i++)
+            {
+                if (Bars.HighPrices[centralIndex] == Bars.HighPrices[i]) return false;
+            }
+
             return true;
         }
 
         /// <summary>
-        /// Returns true if Low Price of bar at centralIndex is the minimum within given period before and after it
+        /// Returns true if Low price of the bar at centralIndex is the minimum within a given period before and after it
+        /// If there are more bars with the same minimum value, only the first returns true
         /// </summary>
-        /// <param name="centralIndex"></param>
-        /// <param name="period">Period to check before and after centralIndex</param>
+        /// <param name="centralIndex">Index of the checked bar</param>
+        /// <param name="period">Number of bars to check before and after centralIndex</param>
         /// <returns></returns>
         public bool isLowPriceMinimum(int centralIndex, int period)
         {
@@ -265,14 +278,21 @@ namespace cAlgo.Robots
             {
                 if (Bars.LowPrices[centralIndex] > Bars.LowPrices[i]) return false;
             }
+
+            for (int i = centralIndex - period; i < centralIndex; i++)
+            {
+                if (Bars.LowPrices[centralIndex] == Bars.LowPrices[i]) return false;
+            }
+
             return true;
         }
 
         /// <summary>
-        /// Returns true if Low Price of bar at centralIndex is the maximum within given period before and after it
+        /// Returns true if Low price of the bar at centralIndex is the maximum within a given period before and after it
+        /// If there are more bars with the same maximum value, only the first returns true
         /// </summary>
-        /// <param name="centralIndex"></param>
-        /// <param name="period">Period to check before and after centralIndex</param>
+        /// <param name="centralIndex">Index of the checked bar</param>
+        /// <param name="period">Number of bars to check before and after centralIndex</param>
         /// <returns></returns>
         public bool isLowPriceMaximum(int centralIndex, int period)
         {
@@ -281,6 +301,12 @@ namespace cAlgo.Robots
             {
                 if (Bars.LowPrices[centralIndex] < Bars.LowPrices[i]) return false;
             }
+
+            for (int i = centralIndex - period; i < centralIndex; i++)
+            {
+                if (Bars.LowPrices[centralIndex] == Bars.LowPrices[i]) return false;
+            }
+
             return true;
         }
         #endregion
