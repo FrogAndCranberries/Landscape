@@ -20,21 +20,12 @@ namespace cAlgo
         public Peak HighEndPeak;
         public Peak LowEndPeak;
 
-        private int CoreStartIndex;
-        private int CoreEndIndex;
-
-        private DateTime CoreStart;
-        private DateTime CoreEnd;
-
+        private TrendCore Core;
 
         // The type of the trend in high- and low- price segment
         // TODO: will be replaced by a double in interval(-1,1)
         public TrendType HighPriceTrendType;
         public TrendType LowPriceTrendType;
-
-        public TimeSpan CoreLength;
-
-        public int CoreLengthInBars;
 
         public int SourcePeakPeriod;
 
@@ -50,19 +41,10 @@ namespace cAlgo
             LowStartPeak = lowStartPeak;
             HighEndPeak = highEndPeak;
             LowEndPeak = lowEndPeak;
+
+            Core = new TrendCore(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak);
+
             AlgoAPI = algoAPI;
-
-            Peak coreStartPeak = HighStartPeak.BarIndex > LowStartPeak.BarIndex ? HighStartPeak : LowStartPeak;
-            Peak coreEndPeak = HighEndPeak.BarIndex < LowEndPeak.BarIndex ? HighEndPeak : LowEndPeak;
-
-            CoreStart = coreStartPeak.DateTime;
-            CoreEnd = coreEndPeak.DateTime;
-
-            CoreStartIndex = coreStartPeak.BarIndex;
-            CoreEndIndex = coreEndPeak.BarIndex;
-
-            CoreLength = CoreEnd - CoreStart;
-            CoreLengthInBars = CoreEndIndex - CoreStartIndex;
 
             // TODO: To be changed to a double, also wont need a threshold. Add a source period check and assignment
             GetTrendType(trendHeightThreshold);
@@ -76,7 +58,7 @@ namespace cAlgo
 
         public TrendLine GetHighTrendLine()
         {
-            int[] coreBarsIndices = Generate.LinearRangeInt32(CoreStartIndex, CoreEndIndex);
+            int[] coreBarsIndices = Generate.LinearRangeInt32(Core.StartIndex, Core.EndIndex);
 
             double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.HighPrices[index]).ToArray();
 
@@ -84,14 +66,14 @@ namespace cAlgo
 
             Tuple<double, double> lineCoefficients = Fit.Line(coreDateTimes, corePrices);
 
-            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd, CoreSpansWeekend() ? Color.Blue : Color.Green);
+            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Core.SpansWeekend() ? Color.Blue : Color.Green);
 
             return highTrendLine;
         }
 
         public TrendLine GetLowTrendLine()
         {
-            int[] coreBarsIndices = Generate.LinearRangeInt32(CoreStartIndex, CoreEndIndex);
+            int[] coreBarsIndices = Generate.LinearRangeInt32(Core.StartIndex, Core.EndIndex);
 
             double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.LowPrices[index]).ToArray();
 
@@ -99,24 +81,9 @@ namespace cAlgo
 
             Tuple<double, double> lineCoefficients = Fit.Line(coreDateTimes, corePrices);
 
-            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd, Color.Red);
+            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Color.Red);
 
             return lowTrendLine;
-        }
-
-        private bool CoreSpansWeekend()
-        {
-            if(CoreLength >= TimeSpan.FromDays(6))
-            {
-                return true;
-            }
-
-            if(CoreEnd.DayOfWeek < CoreStart.DayOfWeek)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private double DateTimeTicksAtBarIndex(int index)
