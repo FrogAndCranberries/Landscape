@@ -84,7 +84,7 @@ namespace cAlgo
 
             Tuple<double, double> lineCoefficients = Fit.Line(coreDateTimes, corePrices);
 
-            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd, Color.Green);
+            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd, CoreSpansWeekend() ? Color.Blue : Color.Green);
 
             return highTrendLine;
         }
@@ -102,6 +102,21 @@ namespace cAlgo
             TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd, Color.Red);
 
             return lowTrendLine;
+        }
+
+        private bool CoreSpansWeekend()
+        {
+            if(CoreLength >= TimeSpan.FromDays(6))
+            {
+                return true;
+            }
+
+            if(CoreEnd.DayOfWeek < CoreStart.DayOfWeek)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private double DateTimeTicksAtBarIndex(int index)
