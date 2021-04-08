@@ -84,7 +84,7 @@ namespace cAlgo
 
             Tuple<double, double> lineCoefficients = Fit.Line(coreDateTimes, corePrices);
 
-            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd);
+            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd, Color.Green);
 
             return highTrendLine;
         }
@@ -99,7 +99,7 @@ namespace cAlgo
 
             Tuple<double, double> lineCoefficients = Fit.Line(coreDateTimes, corePrices);
 
-            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd);
+            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, CoreStart, CoreEnd, Color.Red);
 
             return lowTrendLine;
         }

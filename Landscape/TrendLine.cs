@@ -18,13 +18,15 @@ namespace cAlgo
         public DateTime CoreStart;
         public DateTime CoreEnd;
 
-        public TrendLine(double slopeConstant, double intersectionConstant, DateTime coreStart, DateTime coreEnd)
+        Color Color;
+
+        public TrendLine(double slopeConstant, double intersectionConstant, DateTime coreStart, DateTime coreEnd, Color color)
         {
             SlopeConstant = slopeConstant;
             IntersectionConstant = intersectionConstant;
             CoreStart = coreStart;
             CoreEnd = coreEnd;
-
+            Color = color;
         }
 
         public void Visualize(Chart chart)
@@ -34,7 +36,7 @@ namespace cAlgo
             double coreStartPrice = SlopeConstant * CoreStart.Ticks + IntersectionConstant;
             double coreEndPrice = SlopeConstant * CoreEnd.Ticks + IntersectionConstant;
 
-            chart.DrawTrendLine(name, CoreStart, coreStartPrice, CoreEnd, coreEndPrice, Color.Red);
+            chart.DrawTrendLine(name, CoreStart, coreStartPrice, CoreEnd, coreEndPrice, Color);
         }
     }
 }
