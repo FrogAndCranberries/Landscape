@@ -105,10 +105,13 @@ namespace cAlgo.Robots
         {
             List<IResistanceLine> resistanceLines = new List<IResistanceLine>();
 
+            // TODO: Deal with very short trends
+
             foreach(Trend trend in trends)
             {
                 resistanceLines.Add(trend.GetHighTrendLine());
                 resistanceLines.Add(trend.GetLowTrendLine());
+                if (trend.ShouldGetSupportLine()) resistanceLines.Add(trend.GetSupportLine());
             }
 
             return resistanceLines;

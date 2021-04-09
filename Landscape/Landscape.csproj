@@ -58,6 +58,7 @@
     <Compile Include="Peak.cs" />
     <Compile Include="PeakType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SupportLine.cs" />
     <Compile Include="Trend.cs" />
     <Compile Include="TrendCore.cs" />
     <Compile Include="TrendLine.cs" />

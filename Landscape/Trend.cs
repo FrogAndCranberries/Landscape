@@ -133,6 +133,22 @@ namespace cAlgo
             return lowTrendLine;
         }
 
+        public SupportLine GetSupportLine()
+        {
+            // TODO: Check that we shouldGetSupportLine!
+
+            if (HighTrendType == TrendType.Uptrend && LowTrendType == TrendType.Uptrend)
+            {
+                return new SupportLine(HighEndPeak.Price, HighEndPeak.BarIndex, HighEndPeak.DateTime, Color.Green);
+            }
+            return new SupportLine(LowEndPeak.Price, LowEndPeak.BarIndex, LowEndPeak.DateTime, Color.Red);
+        }
+
+        public bool ShouldGetSupportLine()
+        {
+            return (HighTrendType == TrendType.Uptrend && LowTrendType == TrendType.Uptrend) ||
+                (HighTrendType == TrendType.Downtrend && LowTrendType == TrendType.Downtrend);
+        }
         #region Visualization
         /// <summary>
         /// Draws the contours of the trend on the given chart as colored lines
