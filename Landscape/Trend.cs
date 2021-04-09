@@ -104,17 +104,13 @@ namespace cAlgo
         /// <summary>
         /// Draws the contours of the trend on the active chart as colored lines
         /// </summary>
-        public void VisualizeContours()
+        public void VisualizeContours(Chart chart)
         {
             Color highPriceColor = GetTrendLineColor(HighPriceTrendType);
             Color lowPriceColor = GetTrendLineColor(LowPriceTrendType);
 
-
-            DrawLineBetweenPeaks(HighStartPeak, HighEndPeak, highPriceColor);
-            DrawLineBetweenPeaks(LowStartPeak, LowEndPeak, lowPriceColor);
-
-            AlgoAPI.Print(ToString());
-
+            DrawLineBetweenPeaks(chart, HighStartPeak, HighEndPeak, highPriceColor);
+            DrawLineBetweenPeaks(chart, LowStartPeak, LowEndPeak, lowPriceColor);
         }
         
         private Color GetTrendLineColor(TrendType trendType)
@@ -130,10 +126,10 @@ namespace cAlgo
             }
         }
 
-        private void DrawLineBetweenPeaks(Peak startPeak, Peak endPeak, Color color)
+        private void DrawLineBetweenPeaks(Chart chart, Peak startPeak, Peak endPeak, Color color)
         {
             string name = string.Format("{0}_{1}_to_{2}_{3}_trend", startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price);
-            AlgoAPI.Chart.DrawTrendLine(name, startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price, color);
+            chart.DrawTrendLine(name, startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price, color);
         }
         #endregion
 

@@ -35,17 +35,27 @@ namespace cAlgo.Robots
         #endregion
 
         #region Core fuctions
+
+        /// <summary>
+        /// Instantiates the algorithm by creating a landscape and calculating trading conditions based on it
+        /// </summary>
         protected override void OnStart()
         {
             CreateLandscape();
             CreateConditions();
         }
 
+        /// <summary>
+        /// Checks if the trading conditions were met after each tick
+        /// </summary>
         protected override void OnTick()
         {
             CheckConditions();
         }
 
+        /// <summary>
+        /// Recreates the landscape and the trading conditions after each bar
+        /// </summary>
         protected override void OnBar()
         {
             CreateLandscape();
@@ -60,6 +70,7 @@ namespace cAlgo.Robots
         #endregion
 
         #region Methods
+
         private void CreateLandscape()
         {
             List<Peak> peaks= IdentifyPeaks(PeakSearchPeriod);
@@ -375,7 +386,6 @@ namespace cAlgo.Robots
         /// <returns>List of all found trends</returns>
         private List<Trend> GetTrendSegments(List<Peak> peaks)
         {
-            // Store found short trends
             List<Trend> trendSegments = new List<Trend>();
 
             // Calculate the price threshold for trendType identification
@@ -455,37 +465,48 @@ namespace cAlgo.Robots
                 trendSegments.Add(new Trend(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, threshold, this));
             }
 
-            // Return all found trends
             return trendSegments;
         }
 
         #endregion
 
+        #region Visualization
+        /// <summary>
+        /// Visualizes each Peak in a list on the chart
+        /// </summary>
+        /// <param name="peaks"></param>
         private void VisualizePeaks(List<Peak> peaks)
         {
             foreach(Peak peak in peaks)
             {
-                peak.Visualize();
+                peak.Visualize(Chart);
             }
         }
 
+        /// <summary>
+        /// Visualizes the high- and low-price contours of each Trend in a list on the chart
+        /// </summary>
+        /// <param name="trends"></param>
         private void VisualizeTrendsContours(List<Trend> trends)
         {
             foreach(Trend trend in trends)
             {
-                trend.VisualizeContours();
+                trend.VisualizeContours(Chart);
             }
         }
 
+        /// <summary>
+        /// Visualizes each ResistanceLine in a list on the chart
+        /// </summary>
+        /// <param name="resistanceLines"></param>
         private void VisualizeResistanceLines(List<IResistanceLine> resistanceLines)
         {
             foreach(IResistanceLine resistanceLine in resistanceLines)
             {
                 resistanceLine.Visualize(Chart);
-                Print((resistanceLine as TrendLine).SlopeConstant);
             }
         }
-
+        #endregion
 
         private void CreateConditions()
         {

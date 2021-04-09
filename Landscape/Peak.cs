@@ -69,15 +69,14 @@ namespace cAlgo
         /// <summary>
         /// Draws the peak on the active chart as colored dots
         /// </summary>
-        public void Visualize()
+        public void Visualize(Chart chart)
         {
             //Determine the color of the peak
             Color peakColor = GetPeakColor();
             //The peak has a unique name in the format DateTime_high or DateTime_low
             string name = DateTime.ToString() + (FromHighPrice ? "_high" : "_low") + "_peak";
             //Draw the peak on the chart
-            AlgoAPI.Chart.DrawIcon(name, ChartIconType.Circle, DateTime, Price, peakColor);
-            AlgoAPI.Print(ToString());
+            chart.DrawIcon(name, ChartIconType.Circle, DateTime, Price, peakColor);
         }
 
         /// <summary>
