@@ -15,6 +15,7 @@ namespace cAlgo
     /// </summary>
     class Trend
     {
+        #region Fields
         public Peak HighStartPeak;
         public Peak LowStartPeak;
         public Peak HighEndPeak;
@@ -35,7 +36,17 @@ namespace cAlgo
         // Access to the Algo API
         private Algo AlgoAPI;
 
-        // General constructor taking four bordering peaks and the Algo API
+        #endregion
+
+        /// <summary>
+        /// General constructor taking four bordering peaks, the Algo API and the slope threshold for trend type determination
+        /// </summary>
+        /// <param name="algoAPI"></param>
+        /// <param name="highStartPeak"></param>
+        /// <param name="lowStartPeak"></param>
+        /// <param name="highEndPeak"></param>
+        /// <param name="lowEndPeak"></param>
+        /// <param name="slopeThreshold"></param>
         public Trend(Algo algoAPI, Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double slopeThreshold)
         {
             HighStartPeak = highStartPeak;
@@ -60,64 +71,87 @@ namespace cAlgo
                 HighTrendType, LowTrendType, HighStartPeak.BarIndex, LowStartPeak.BarIndex, HighEndPeak.BarIndex, LowEndPeak.BarIndex);
         }
 
+        /// <summary>
+        /// Returns the slope of a line between two peaks in price change per bar
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        private double GetTrendSlope(Peak start, Peak end)
+        {
+            return (end.Price - start.Price) / (end.BarIndex - start.BarIndex);
+        }
+
+        /// <summary>
+        /// Determines the trend type of a line with a given slope and a slope threshold
+        /// </summary>
+        /// <param name="trendSlope"></param>
+        /// <param name="slopeThreshold"></param>
+        /// <returns></returns>
+        private TrendType GetTrendType(double trendSlope, double slopeThreshold)
+        {
+            if (trendSlope > slopeThreshold) return TrendType.Uptrend;
+            if (trendSlope < -slopeThreshold) return TrendType.Downtrend;
+            return TrendType.Consolidation;
+        }
+
+        /// <summary>
+        /// Returns the Trendline derived from the high prices in the trend core
+        /// </summary>
+        /// <returns></returns>
         public TrendLine GetHighTrendLine()
         {
             int[] coreBarsIndices = Generate.LinearRangeInt32(Core.StartIndex, Core.EndIndex);
 
             double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.HighPrices[index]).ToArray();
 
-            //double[] coreDateTimes = coreBarsIndices.Select(index => DateTimeTicksAtBarIndex(index)).ToArray();
+            double[] coreIndicesAsDouble = coreBarsIndices.Select(index => (double)index).ToArray();
 
-            double[] coreIndices = coreBarsIndices.Select(index => (double)index).ToArray();
+            Tuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
 
-            Tuple<double, double> lineCoefficients = Fit.Line(coreIndices, corePrices);
-
-            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Core.StartIndex, Core.EndIndex, Core.SpansWeekend() ? Color.Blue : Color.Green);
+            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Core.StartIndex, Core.EndIndex,Color.Green);
 
             return highTrendLine;
         }
 
+        /// <summary>
+        /// returns the TrendLine derived from the low prices in the trend core
+        /// </summary>
+        /// <returns></returns>
         public TrendLine GetLowTrendLine()
         {
             int[] coreBarsIndices = Generate.LinearRangeInt32(Core.StartIndex, Core.EndIndex);
 
             double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.LowPrices[index]).ToArray();
 
-            //double[] coreDateTimes = coreBarsIndices.Select(index => DateTimeTicksAtBarIndex(index)).ToArray();
+            double[] coreIndicesAsDouble = coreBarsIndices.Select(index => (double)index).ToArray();
 
+            Tuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
 
-            double[] coreIndices = coreBarsIndices.Select(index => (double)index).ToArray();
-
-            Tuple<double, double> lineCoefficients = Fit.Line(coreIndices, corePrices);
-
-            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Core.StartIndex, Core.EndIndex, Color.Red);
+            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Core.StartIndex, Core.EndIndex, Color.Blue);
 
             return lowTrendLine;
         }
 
-        private double DateTimeTicksAtBarIndex(int index)
-        {
-            DateTime openTime = AlgoAPI.Bars.OpenTimes[index];
-
-            long openTimeInTicks = openTime.Ticks;
-
-            return Convert.ToDouble(openTimeInTicks);
-        }
-
         #region Visualization
         /// <summary>
-        /// Draws the contours of the trend on the active chart as colored lines
+        /// Draws the contours of the trend on the given chart as colored lines
         /// </summary>
         public void VisualizeContours(Chart chart)
         {
-            Color highPriceColor = GetTrendLineColor(HighTrendType);
-            Color lowPriceColor = GetTrendLineColor(LowTrendType);
+            Color highPriceColor = GetTrendContourColor(HighTrendType);
+            Color lowPriceColor = GetTrendContourColor(LowTrendType);
 
             DrawLineBetweenPeaks(chart, HighStartPeak, HighEndPeak, highPriceColor);
             DrawLineBetweenPeaks(chart, LowStartPeak, LowEndPeak, lowPriceColor);
         }
         
-        private Color GetTrendLineColor(TrendType trendType)
+        /// <summary>
+        /// Returns the color of a trend contour based on its trendType
+        /// </summary>
+        /// <param name="trendType"></param>
+        /// <returns></returns>
+        private Color GetTrendContourColor(TrendType trendType)
         {
             switch (trendType)
             {
@@ -130,6 +164,13 @@ namespace cAlgo
             }
         }
 
+        /// <summary>
+        /// Draws a line of a given color between two peaks on the chart
+        /// </summary>
+        /// <param name="chart"></param>
+        /// <param name="startPeak"></param>
+        /// <param name="endPeak"></param>
+        /// <param name="color"></param>
         private void DrawLineBetweenPeaks(Chart chart, Peak startPeak, Peak endPeak, Color color)
         {
             string name = string.Format("{0}_{1}_to_{2}_{3}_trend", startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price);
@@ -137,19 +178,7 @@ namespace cAlgo
         }
         #endregion
 
-        
-        private double GetTrendSlope(Peak start, Peak end)
-        {
-            return (end.Price - start.Price) / (end.BarIndex - start.BarIndex);
-        }
-
-        private TrendType GetTrendType(double trendSlope, double slopeThreshold)
-        {
-            if (trendSlope > slopeThreshold) return TrendType.Uptrend;
-            if (trendSlope < -slopeThreshold) return TrendType.Downtrend;
-            return TrendType.Consolidation;
-        }
-
+        #region Trend Creation
         /// <summary>
         /// Finds all shortest possible trends between peaks in a given list
         /// </summary>
@@ -255,6 +284,7 @@ namespace cAlgo
                 return new Trend(Algo, HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
             }
         }
+        #endregion
 
         #region Useless
         // TODO: following functions either obsolete or need reworking

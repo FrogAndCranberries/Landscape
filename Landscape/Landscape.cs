@@ -35,7 +35,7 @@ namespace cAlgo.Robots
 
         #endregion
 
-        #region Variables
+        #region Fields
         /// <summary>
         /// Will determine the peakSearchPeriod for each timeframe layer of landscape creation. Values unknown yet
         /// </summary>
@@ -350,21 +350,15 @@ namespace cAlgo.Robots
             return trendSegments;
 
             //TODO: What to do with short trend segemnts we have now?
-            /*
-            if(TrendSegments.Count == 1)
-            {
-                return TrendSegments;
-            }
-
-            Trends = MergeTrendSegments(TrendSegments);
-
-            //After finishing the logic
-            return Trends;
-            */
         }
 
         private List<Trend> MergeTrendSegments(List<Trend> trendSegments)
         {
+            if (trendSegments.Count == 1)
+            {
+                return trendSegments;
+            }
+
             List<Trend> mergedTrends = new List<Trend>();
 
             //Combine the short trends if they have the same type
@@ -389,9 +383,6 @@ namespace cAlgo.Robots
 
             return mergedTrends;
         }
-
-        
-
         #endregion
 
         #region Visualization
