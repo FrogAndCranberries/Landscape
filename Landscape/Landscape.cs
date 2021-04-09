@@ -87,8 +87,8 @@ namespace cAlgo.Robots
 
             foreach(Trend trend in trends)
             {
-                resistanceLines.Add(trend.GetHighTrendLine());
-                resistanceLines.Add(trend.GetLowTrendLine());
+                resistanceLines.Add(trend.GetHighTrendLineIndex());
+                //resistanceLines.Add(trend.GetLowTrendLine());
             }
 
             return resistanceLines;

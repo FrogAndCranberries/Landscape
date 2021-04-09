@@ -35,12 +35,7 @@ namespace cAlgo
 
         public bool SpansWeekend()
         {
-            if (Length >= TimeSpan.FromDays(6))
-            {
-                return true;
-            }
-
-            if (EndTime.DayOfWeek < StartTime.DayOfWeek)
+            if (Length >= TimeSpan.FromDays(6) || EndTime.DayOfWeek < StartTime.DayOfWeek)
             {
                 return true;
             }
