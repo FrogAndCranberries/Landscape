@@ -159,80 +159,101 @@ namespace cAlgo
         {
             List<Trend> trendSegments = new List<Trend>();
 
-            // Four peaks bordering the current trend reading frame
-            // It has the high- and low-price component, each bordered by two peaks
-            Peak highStartPeak;
-            Peak lowStartPeak;
-            Peak highEndPeak;
-            Peak lowEndPeak;
-
-            // Split the input list into High- and low-price peaks
             List<Peak> highPeaks = peaks.FindAll(peak => peak.FromHighPrice);
             List<Peak> lowPeaks = peaks.FindAll(peak => !peak.FromHighPrice);
 
-            // Assign the first four peaks into the reading frame
-            highStartPeak = highPeaks[0];
-            highEndPeak = highPeaks[1];
-            lowStartPeak = lowPeaks[0];
-            lowEndPeak = lowPeaks[1];
+            // TODO: Check there are at least two low and two high Peaks
 
-            // Remove those four peaks from the lists
+            TrendReadingFrame readingFrame = new TrendReadingFrame(algo, highPeaks[0], lowPeaks[0], highPeaks[1], lowPeaks[1], trendTypethreshold);
+
             highPeaks.RemoveRange(0, 2);
             lowPeaks.RemoveRange(0, 2);
 
-            // Store the first trend
-            trendSegments.Add(new Trend(algo, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypethreshold));
+            trendSegments.Add(readingFrame.GetCurrentTrend());
 
-            // While there are uninvestigated high- and low-price peaks left
             while (highPeaks.Count > 0 && lowPeaks.Count > 0)
             {
-                // If the low-price component of the reading frame is further, advance the high-price component
-                if (highEndPeak.BarIndex < lowEndPeak.BarIndex)
+                if(!readingFrame.ShouldAdvanceHigh() && !readingFrame.ShouldAdvanceLow())
                 {
-                    highStartPeak = highEndPeak;
-                    highEndPeak = highPeaks[0];
+                    readingFrame.AdvanceHigh(highPeaks[0]);
                     highPeaks.RemoveAt(0);
                 }
-                // If the high-price component of the reading frame is further, advance the low-price component
-                else if (highEndPeak.BarIndex > lowEndPeak.BarIndex)
+                if (readingFrame.ShouldAdvanceHigh())
                 {
-                    lowStartPeak = lowEndPeak;
-                    lowEndPeak = lowPeaks[0];
+                    trendSegments.Add(readingFrame.AdvanceHigh(highPeaks[0]));
+                    highPeaks.RemoveAt(0);
+                }
+                if (readingFrame.ShouldAdvanceLow())
+                {
+                    trendSegments.Add(readingFrame.AdvanceLow(lowPeaks[0]));
                     lowPeaks.RemoveAt(0);
                 }
-                // Otherwise they must end at the same spot, so advance high-price component
-                // But do not save a trend, as there is no overlap between the components
-                else
-                {
-                    highStartPeak = highEndPeak;
-                    highEndPeak = highPeaks[0];
-                    highPeaks.RemoveAt(0);
-                    continue;
-                }
-
-                // Save the trend in the new reading frame
-                trendSegments.Add(new Trend(algo, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypethreshold));
             }
 
-            // If there are high-price peaks left, move the high-component over them and save the last trends
             while (highPeaks.Count > 0)
             {
-                highStartPeak = highEndPeak;
-                highEndPeak = highPeaks[0];
+                trendSegments.Add(readingFrame.AdvanceHigh(highPeaks[0]));
                 highPeaks.RemoveAt(0);
-                trendSegments.Add(new Trend(algo, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypethreshold));
             }
 
-            // If there are low-price peaks left, move the low-component over them and save the last trends
             while (lowPeaks.Count > 0)
             {
-                lowStartPeak = lowEndPeak;
-                lowEndPeak = lowPeaks[0];
+                trendSegments.Add(readingFrame.AdvanceLow(lowPeaks[0]));
                 lowPeaks.RemoveAt(0);
-                trendSegments.Add(new Trend(algo, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypethreshold));
             }
 
             return trendSegments;
+        }
+
+        private class TrendReadingFrame
+        {
+            Peak HighStartPeak;
+            Peak LowStartPeak;
+            Peak HighEndPeak;
+            Peak LowEndPeak;
+
+            Algo Algo;
+            double TrendTypeThreshold;
+
+            public TrendReadingFrame(Algo algo, Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double trendTypeThreshold)
+            {
+                HighStartPeak = highStartPeak;
+                LowStartPeak = lowStartPeak;
+                HighEndPeak = highEndPeak;
+                LowEndPeak = lowEndPeak;
+
+                Algo = algo;
+                TrendTypeThreshold = trendTypeThreshold;
+            }
+
+            public bool ShouldAdvanceHigh()
+            {
+                return HighEndPeak.BarIndex < LowEndPeak.BarIndex;
+            }
+
+            public Trend AdvanceHigh(Peak newHighPeak)
+            {
+                HighStartPeak = HighEndPeak;
+                HighEndPeak = newHighPeak;
+                return new Trend(Algo, HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
+            }
+
+            public bool ShouldAdvanceLow()
+            {
+                return HighEndPeak.BarIndex > LowEndPeak.BarIndex;
+            }
+
+            public Trend AdvanceLow(Peak newLowPeak)
+            {
+                LowStartPeak = LowEndPeak;
+                LowEndPeak = newLowPeak;
+                return new Trend(Algo, HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
+            }
+
+            public Trend GetCurrentTrend()
+            {
+                return new Trend(Algo, HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
+            }
         }
 
         #region Useless

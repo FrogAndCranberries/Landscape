@@ -23,7 +23,16 @@ namespace cAlgo.Robots
         /// </summary>
         [Parameter(DefaultValue = 1, MinValue = 0, MaxValue = 100)]
         public int trendTypeThreshold { get; set; }
-        
+
+        [Parameter(DefaultValue = false)]
+        public bool ShouldVisualizePeaks { get; set; }
+
+        [Parameter(DefaultValue = false)]
+        public bool ShouldVisualizeTrendContours { get; set; }
+
+        [Parameter(DefaultValue = false)]
+        public bool ShouldVisualizeResistanceLines { get; set; }
+
         #endregion
 
         #region Variables
@@ -79,9 +88,9 @@ namespace cAlgo.Robots
 
             List<IResistanceLine> resistanceLines = IdentifyLines(peaks, trends);
 
-            VisualizePeaks(peaks);
-            VisualizeTrendsContours(trends);
-            //VisualizeResistanceLines(resistanceLines);
+            if (ShouldVisualizePeaks) VisualizePeaks(peaks);
+            if (ShouldVisualizeTrendContours) VisualizeTrendsContours(trends);
+            if (ShouldVisualizeResistanceLines) VisualizeResistanceLines(resistanceLines);
 
             //Will be used to get multiple landscape layers with different line id periods
             /*foreach(int period in Periods)
