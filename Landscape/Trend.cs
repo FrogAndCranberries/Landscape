@@ -22,10 +22,11 @@ namespace cAlgo
 
         private TrendCore Core;
 
-        // The type of the trend in high- and low- price segment
-        // TODO: will be replaced by a double in interval(-1,1)
-        public TrendType HighPriceTrendType;
-        public TrendType LowPriceTrendType;
+        public double HighTrendSlope;
+        public double LowTrendSlope;
+
+        public TrendType HighTrendType;
+        public TrendType LowTrendType;
 
         public int SourcePeakPeriod;
 
@@ -35,7 +36,7 @@ namespace cAlgo
         private Algo AlgoAPI;
 
         // General constructor taking four bordering peaks and the Algo API
-        public Trend(Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double trendHeightThreshold, Algo algoAPI)
+        public Trend(Algo algoAPI, Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double slopeThreshold)
         {
             HighStartPeak = highStartPeak;
             LowStartPeak = lowStartPeak;
@@ -46,14 +47,17 @@ namespace cAlgo
 
             AlgoAPI = algoAPI;
 
-            // TODO: To be changed to a double, also wont need a threshold. Add a source period check and assignment
-            GetTrendType(trendHeightThreshold);
+            // TODO: Add a source period check and assignment
+            HighTrendSlope = GetTrendSlope(highStartPeak, highEndPeak);
+            LowTrendSlope = GetTrendSlope(lowStartPeak, lowEndPeak);
+            HighTrendType = GetTrendType(HighTrendSlope, slopeThreshold);
+            LowTrendType = GetTrendType(LowTrendSlope, slopeThreshold);
         }
 
         public override string ToString()
         {
             return string.Format("Trend HP {0}, LP {1}, start at index HP {2}, LP {3}, end at HP {4}, LP {5}",
-                HighPriceTrendType, LowPriceTrendType, HighStartPeak.BarIndex, LowStartPeak.BarIndex, HighEndPeak.BarIndex, LowEndPeak.BarIndex);
+                HighTrendType, LowTrendType, HighStartPeak.BarIndex, LowStartPeak.BarIndex, HighEndPeak.BarIndex, LowEndPeak.BarIndex);
         }
 
         public TrendLine GetHighTrendLine()
@@ -106,8 +110,8 @@ namespace cAlgo
         /// </summary>
         public void VisualizeContours(Chart chart)
         {
-            Color highPriceColor = GetTrendLineColor(HighPriceTrendType);
-            Color lowPriceColor = GetTrendLineColor(LowPriceTrendType);
+            Color highPriceColor = GetTrendLineColor(HighTrendType);
+            Color lowPriceColor = GetTrendLineColor(LowTrendType);
 
             DrawLineBetweenPeaks(chart, HighStartPeak, HighEndPeak, highPriceColor);
             DrawLineBetweenPeaks(chart, LowStartPeak, LowEndPeak, lowPriceColor);
@@ -133,31 +137,27 @@ namespace cAlgo
         }
         #endregion
 
-        #region Useless
-        // TODO: following functions either obsolete or need reworking
-        private void GetTrendType(double trendHeightThreshold)
+        
+        private double GetTrendSlope(Peak start, Peak end)
         {
-            HighPriceTrendType = GetTrendTypeBetweenPeaks(HighStartPeak, HighEndPeak, trendHeightThreshold);
-            LowPriceTrendType = GetTrendTypeBetweenPeaks(LowStartPeak, LowEndPeak, trendHeightThreshold);
+            return (end.Price - start.Price) / (end.BarIndex - start.BarIndex);
         }
 
-        private TrendType GetTrendTypeBetweenPeaks(Peak start, Peak end, double threshold)
+        private TrendType GetTrendType(double trendSlope, double slopeThreshold)
         {
-            if (end.Price - start.Price > threshold)
-            {
-                return TrendType.Uptrend;
-            }
-            if (end.Price - start.Price < threshold * -1)
-            {
-                return TrendType.Downtrend;
-            }
+            if (trendSlope > slopeThreshold) return TrendType.Uptrend;
+            if (trendSlope < -slopeThreshold) return TrendType.Downtrend;
             return TrendType.Consolidation;
         }
 
+        #region Useless
+        // TODO: following functions either obsolete or need reworking
 
+        
         public bool HasSameTrendType(Trend other)
         {
-            return HighPriceTrendType == other.HighPriceTrendType && LowPriceTrendType == other.LowPriceTrendType;
+            // TODO: implement or delete
+            return false;
         }
 
         //TODO: behavior related to other properties

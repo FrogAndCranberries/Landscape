@@ -19,10 +19,10 @@ namespace cAlgo.Robots
         public int PeakSearchPeriod { get; set; }
 
         /// <summary>
-        /// Determines a threshold for minimal gradient of a trend if that will be needed. Might have to be landcape-layer specific
+        /// Determines a minimal up- and downtrend gradient as price change per 50 000 bars. Might have to be landcape-layer specific
         /// </summary>
-        [Parameter(DefaultValue = 5, MinValue = 0)]
-        public int trendIdThresholdPips { get; set; }
+        [Parameter(DefaultValue = 1, MinValue = 0, MaxValue = 100)]
+        public int trendTypeThreshold { get; set; }
         
         #endregion
 
@@ -80,8 +80,8 @@ namespace cAlgo.Robots
             List<IResistanceLine> resistanceLines = IdentifyLines(peaks, trends);
 
             VisualizePeaks(peaks);
-            //VisualizeTrendsContours(trends);
-            VisualizeResistanceLines(resistanceLines);
+            VisualizeTrendsContours(trends);
+            //VisualizeResistanceLines(resistanceLines);
 
             //Will be used to get multiple landscape layers with different line id periods
             /*foreach(int period in Periods)
@@ -388,9 +388,7 @@ namespace cAlgo.Robots
         {
             List<Trend> trendSegments = new List<Trend>();
 
-            // Calculate the price threshold for trendType identification
-            // TODO: obsolete soon
-            double threshold = trendIdThresholdPips * Symbol.PipSize;
+            double trendTypeThresholdPerBar = (double)trendTypeThreshold / 50000;
 
             // Four peaks bordering the current trend reading frame
             // It has the high- and low-price component, each bordered by two peaks
@@ -414,7 +412,7 @@ namespace cAlgo.Robots
             lowPeaks.RemoveRange(0, 2);
 
             // Store the first trend
-            trendSegments.Add(new Trend(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, threshold, this));
+            trendSegments.Add(new Trend(this, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypeThresholdPerBar));
 
             // While there are uninvestigated high- and low-price peaks left
             while (highPeaks.Count > 0 && lowPeaks.Count > 0)
@@ -444,7 +442,7 @@ namespace cAlgo.Robots
                 }
 
                 // Save the trend in the new reading frame
-                trendSegments.Add(new Trend(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, threshold, this));
+                trendSegments.Add(new Trend(this, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypeThresholdPerBar));
             }
 
             // If there are high-price peaks left, move the high-component over them and save the last trends
@@ -453,7 +451,7 @@ namespace cAlgo.Robots
                 highStartPeak = highEndPeak;
                 highEndPeak = highPeaks[0];
                 highPeaks.RemoveAt(0);
-                trendSegments.Add(new Trend(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, threshold, this));
+                trendSegments.Add(new Trend(this, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypeThresholdPerBar));
             }
 
             // If there are low-price peaks left, move the low-component over them and save the last trends
@@ -462,7 +460,7 @@ namespace cAlgo.Robots
                 lowStartPeak = lowEndPeak;
                 lowEndPeak = lowPeaks[0];
                 lowPeaks.RemoveAt(0);
-                trendSegments.Add(new Trend(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, threshold, this));
+                trendSegments.Add(new Trend(this, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypeThresholdPerBar));
             }
 
             return trendSegments;
