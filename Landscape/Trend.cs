@@ -144,6 +144,8 @@ namespace cAlgo
 
             DrawLineBetweenPeaks(chart, HighStartPeak, HighEndPeak, highPriceColor);
             DrawLineBetweenPeaks(chart, LowStartPeak, LowEndPeak, lowPriceColor);
+
+            AlgoAPI.Print(ToString());
         }
         
         /// <summary>
@@ -193,16 +195,14 @@ namespace cAlgo
 
             // TODO: Check there are at least two low and two high Peaks
 
-            TrendReadingFrame readingFrame = new TrendReadingFrame(algo, highPeaks[0], lowPeaks[0], highPeaks[1], lowPeaks[1], trendTypethreshold);
+            TrendReadingFrame readingFrame = new TrendReadingFrame(algo, highPeaks[0], highPeaks[1], lowPeaks[0], trendTypethreshold);
 
             highPeaks.RemoveRange(0, 2);
-            lowPeaks.RemoveRange(0, 2);
-
-            trendSegments.Add(readingFrame.GetCurrentTrend());
+            lowPeaks.RemoveAt(0);
 
             while (highPeaks.Count > 0 && lowPeaks.Count > 0)
             {
-                if(!readingFrame.ShouldAdvanceHigh() && !readingFrame.ShouldAdvanceLow())
+                if (!readingFrame.ShouldAdvanceHigh() && !readingFrame.ShouldAdvanceLow())
                 {
                     readingFrame.AdvanceHigh(highPeaks[0]);
                     highPeaks.RemoveAt(0);
@@ -234,6 +234,9 @@ namespace cAlgo
             return trendSegments;
         }
 
+        /// <summary>
+        /// Represents the reading frame on two lists of peaks during trend segment identification
+        /// </summary>
         private class TrendReadingFrame
         {
             Peak HighStartPeak;
@@ -244,10 +247,18 @@ namespace cAlgo
             Algo Algo;
             double TrendTypeThreshold;
 
-            public TrendReadingFrame(Algo algo, Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double trendTypeThreshold)
+            /// <summary>
+            /// Sets three out of the four peaks, the fourth will be pushed in at the first advance
+            /// </summary>
+            /// <param name="algo"></param>
+            /// <param name="highStartPeak"></param>
+            /// <param name="highEndPeak"></param>
+            /// <param name="lowEndPeak"></param>
+            /// <param name="trendTypeThreshold"></param>
+            public TrendReadingFrame(Algo algo, Peak highStartPeak, Peak highEndPeak, Peak lowEndPeak, double trendTypeThreshold)
             {
+                // TODO: check that highStartPeak and LowEndPeak have the same index, and highEndPeak is after that
                 HighStartPeak = highStartPeak;
-                LowStartPeak = lowStartPeak;
                 HighEndPeak = highEndPeak;
                 LowEndPeak = lowEndPeak;
 
@@ -255,11 +266,20 @@ namespace cAlgo
                 TrendTypeThreshold = trendTypeThreshold;
             }
 
+            /// <summary>
+            /// Determines if the reading frame should now advance the high price half
+            /// </summary>
+            /// <returns></returns>
             public bool ShouldAdvanceHigh()
             {
                 return HighEndPeak.BarIndex < LowEndPeak.BarIndex;
             }
 
+            /// <summary>
+            /// Moves the high half of the reading frame one peak forward and returns the new trend in the reading frame
+            /// </summary>
+            /// <param name="newHighPeak"></param>
+            /// <returns></returns>
             public Trend AdvanceHigh(Peak newHighPeak)
             {
                 HighStartPeak = HighEndPeak;
@@ -267,20 +287,24 @@ namespace cAlgo
                 return new Trend(Algo, HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
             }
 
+            /// <summary>
+            /// Determines if the reading frame should now advance the low price half
+            /// </summary>
+            /// <returns></returns>
             public bool ShouldAdvanceLow()
             {
                 return HighEndPeak.BarIndex > LowEndPeak.BarIndex;
             }
 
+            /// <summary>
+            /// Moves the low half of the reading frame one peak forward and returns the new trend in the reading frame
+            /// </summary>
+            /// <param name="newLowPeak"></param>
+            /// <returns></returns>
             public Trend AdvanceLow(Peak newLowPeak)
             {
                 LowStartPeak = LowEndPeak;
                 LowEndPeak = newLowPeak;
-                return new Trend(Algo, HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
-            }
-
-            public Trend GetCurrentTrend()
-            {
                 return new Trend(Algo, HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
             }
         }
