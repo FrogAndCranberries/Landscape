@@ -334,7 +334,9 @@ namespace cAlgo.Robots
             //Stores finally merged TrendSegments
             List<Trend> trends = new List<Trend>();
 
-            List<Trend> trendSegments = GetTrendSegments(peaks);
+            double trendTypeThresholdPerBar = (double)trendTypeThreshold / 50000;
+
+            List<Trend> trendSegments = Trend.GetTrendSegments(this, peaks, trendTypeThresholdPerBar);
 
             return trendSegments;
 
@@ -379,92 +381,7 @@ namespace cAlgo.Robots
             return mergedTrends;
         }
 
-        /// <summary>
-        /// Finds all shortest possible trends between peaks in a given list
-        /// </summary>
-        /// <param name="peaks">List of peaks bordering the serched trends</param>
-        /// <returns>List of all found trends</returns>
-        private List<Trend> GetTrendSegments(List<Peak> peaks)
-        {
-            List<Trend> trendSegments = new List<Trend>();
-
-            double trendTypeThresholdPerBar = (double)trendTypeThreshold / 50000;
-
-            // Four peaks bordering the current trend reading frame
-            // It has the high- and low-price component, each bordered by two peaks
-            Peak highStartPeak;
-            Peak lowStartPeak;
-            Peak highEndPeak;
-            Peak lowEndPeak;
-
-            // Split the input list into High- and low-price peaks
-            List<Peak> highPeaks = peaks.FindAll(peak => peak.FromHighPrice);
-            List<Peak> lowPeaks = peaks.FindAll(peak => !peak.FromHighPrice);
-
-            // Assign the first four peaks into the reading frame
-            highStartPeak = highPeaks[0];
-            highEndPeak = highPeaks[1];
-            lowStartPeak = lowPeaks[0];
-            lowEndPeak = lowPeaks[1];
-
-            // Remove those four peaks from the lists
-            highPeaks.RemoveRange(0, 2);
-            lowPeaks.RemoveRange(0, 2);
-
-            // Store the first trend
-            trendSegments.Add(new Trend(this, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypeThresholdPerBar));
-
-            // While there are uninvestigated high- and low-price peaks left
-            while (highPeaks.Count > 0 && lowPeaks.Count > 0)
-            {
-                // If the low-price component of the reading frame is further, advance the high-price component
-                if (highEndPeak.BarIndex < lowEndPeak.BarIndex)
-                {
-                    highStartPeak = highEndPeak;
-                    highEndPeak = highPeaks[0];
-                    highPeaks.RemoveAt(0);
-                }
-                // If the high-price component of the reading frame is further, advance the low-price component
-                else if (highEndPeak.BarIndex > lowEndPeak.BarIndex)
-                {
-                    lowStartPeak = lowEndPeak;
-                    lowEndPeak = lowPeaks[0];
-                    lowPeaks.RemoveAt(0);
-                }
-                // Otherwise they must end at the same spot, so advance high-price component
-                // But do not save a trend, as there is no overlap between the components
-                else
-                {
-                    highStartPeak = highEndPeak;
-                    highEndPeak = highPeaks[0];
-                    highPeaks.RemoveAt(0);
-                    continue;
-                }
-
-                // Save the trend in the new reading frame
-                trendSegments.Add(new Trend(this, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypeThresholdPerBar));
-            }
-
-            // If there are high-price peaks left, move the high-component over them and save the last trends
-            while(highPeaks.Count > 0)
-            {
-                highStartPeak = highEndPeak;
-                highEndPeak = highPeaks[0];
-                highPeaks.RemoveAt(0);
-                trendSegments.Add(new Trend(this, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypeThresholdPerBar));
-            }
-
-            // If there are low-price peaks left, move the low-component over them and save the last trends
-            while (lowPeaks.Count > 0)
-            {
-                lowStartPeak = lowEndPeak;
-                lowEndPeak = lowPeaks[0];
-                lowPeaks.RemoveAt(0);
-                trendSegments.Add(new Trend(this, highStartPeak, lowStartPeak, highEndPeak, lowEndPeak, trendTypeThresholdPerBar));
-            }
-
-            return trendSegments;
-        }
+        
 
         #endregion
 
