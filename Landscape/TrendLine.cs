@@ -21,8 +21,6 @@ namespace cAlgo
         public int CoreStartIndex;
         public int CoreEndIndex;
 
-        public TimeSpan StartOffset;
-
         Color Color;
 
         public TrendLine(double slopeConstant, double intersectionConstant, DateTime coreStart, DateTime coreEnd, int coreStartIndex, int coreEndIndex, Color color)

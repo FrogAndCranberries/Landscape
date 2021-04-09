@@ -223,20 +223,15 @@ namespace cAlgo
         /// <returns>List of all found trends</returns>
         public static List<Trend> GetTrendSegments(Algo algo, List<Peak> peaks, double trendTypethreshold)
         {
-            void ValidateInputPeakLists(List<Peak> validatedHighPeaks, List<Peak> validatedLowPeaks)
-            {
-                if (validatedHighPeaks.Count < 2 || validatedLowPeaks.Count < 2)
-                {
-                    string message = "Cannot find trends between less than two high- and two low-price peaks.";
-                    throw new ArgumentException(message);
-                }
-            }
-
-
             List<Peak> highPeaks = peaks.FindAll(peak => peak.FromHighPrice);
             List<Peak> lowPeaks = peaks.FindAll(peak => !peak.FromHighPrice);
 
-            ValidateInputPeakLists(highPeaks, lowPeaks);
+            // Validate input without a nested function
+            if (highPeaks.Count < 2 || lowPeaks.Count < 2)
+            {
+                string message = "Cannot find trends between less than two high- and two low-price peaks.";
+                throw new ArgumentException(message);
+            }
 
             List<Trend> trendSegments = new List<Trend>();
 
@@ -244,6 +239,8 @@ namespace cAlgo
 
             highPeaks.RemoveRange(0, 2);
             lowPeaks.RemoveAt(0);
+
+            // Ala mergesort
 
             while (highPeaks.Count > 0 && lowPeaks.Count > 0)
             {
