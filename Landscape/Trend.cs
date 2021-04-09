@@ -62,11 +62,13 @@ namespace cAlgo
 
             double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.HighPrices[index]).ToArray();
 
-            double[] coreDateTimes = coreBarsIndices.Select(index => DateTimeTicksAtBarIndex(index)).ToArray();
+            //double[] coreDateTimes = coreBarsIndices.Select(index => DateTimeTicksAtBarIndex(index)).ToArray();
 
-            Tuple<double, double> lineCoefficients = Fit.Line(coreDateTimes, corePrices);
+            double[] coreIndices = coreBarsIndices.Select(index => (double)index).ToArray();
 
-            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Core.SpansWeekend() ? Color.Blue : Color.Green);
+            Tuple<double, double> lineCoefficients = Fit.Line(coreIndices, corePrices);
+
+            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Core.StartIndex, Core.EndIndex, Core.SpansWeekend() ? Color.Blue : Color.Green);
 
             return highTrendLine;
         }
@@ -77,11 +79,14 @@ namespace cAlgo
 
             double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.LowPrices[index]).ToArray();
 
-            double[] coreDateTimes = coreBarsIndices.Select(index => DateTimeTicksAtBarIndex(index)).ToArray();
+            //double[] coreDateTimes = coreBarsIndices.Select(index => DateTimeTicksAtBarIndex(index)).ToArray();
 
-            Tuple<double, double> lineCoefficients = Fit.Line(coreDateTimes, corePrices);
 
-            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Color.Red);
+            double[] coreIndices = coreBarsIndices.Select(index => (double)index).ToArray();
+
+            Tuple<double, double> lineCoefficients = Fit.Line(coreIndices, corePrices);
+
+            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Core.StartIndex, Core.EndIndex, Color.Red);
 
             return lowTrendLine;
         }
