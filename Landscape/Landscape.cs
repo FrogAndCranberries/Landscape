@@ -83,7 +83,7 @@ namespace cAlgo.Robots
         private void CreateLandscape()
         {
             List<Peak> peaks= IdentifyPeaks(PeakSearchPeriod);
-            
+
             List<Trend> trends = IdentifyTrends(peaks);
 
             List<IResistanceLine> resistanceLines = IdentifyLines(peaks, trends);

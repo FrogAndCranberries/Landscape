@@ -226,7 +226,8 @@ namespace cAlgo
             List<Peak> highPeaks = peaks.FindAll(peak => peak.FromHighPrice);
             List<Peak> lowPeaks = peaks.FindAll(peak => !peak.FromHighPrice);
 
-            // Validate input without a nested function
+            // Validate input
+            // TODO: Create Peak ordering based on barindex and check the input list was ordered
             if (highPeaks.Count < 2 || lowPeaks.Count < 2)
             {
                 string message = "Cannot find trends between less than two high- and two low-price peaks.";
@@ -235,15 +236,16 @@ namespace cAlgo
 
             List<Trend> trendSegments = new List<Trend>();
 
-            TrendReadingFrame readingFrame = new TrendReadingFrame(algo, highPeaks[0], highPeaks[1], lowPeaks[0], trendTypethreshold);
-
-            highPeaks.RemoveRange(0, 2);
+            TrendReadingFrame readingFrame = new TrendReadingFrame(algo, highPeaks[0], lowPeaks[0], trendTypethreshold);
+            
+            highPeaks.RemoveAt(0);
             lowPeaks.RemoveAt(0);
 
             // Ala mergesort
 
             while (highPeaks.Count > 0 && lowPeaks.Count > 0)
             {
+                
                 if (!readingFrame.ShouldAdvanceHigh() && !readingFrame.ShouldAdvanceLow())
                 {
                     readingFrame.AdvanceHigh(highPeaks[0]);
@@ -251,28 +253,32 @@ namespace cAlgo
                 }
                 if (readingFrame.ShouldAdvanceHigh())
                 {
-                    trendSegments.Add(readingFrame.AdvanceHigh(highPeaks[0]));
+                    readingFrame.AdvanceHigh(highPeaks[0]);
+                    trendSegments.Add(readingFrame.GetTrend());
                     highPeaks.RemoveAt(0);
                 }
                 if (readingFrame.ShouldAdvanceLow())
                 {
-                    trendSegments.Add(readingFrame.AdvanceLow(lowPeaks[0]));
+                    readingFrame.AdvanceLow(lowPeaks[0]);
+                    trendSegments.Add(readingFrame.GetTrend());
                     lowPeaks.RemoveAt(0);
                 }
             }
 
             while (highPeaks.Count > 0)
             {
-                trendSegments.Add(readingFrame.AdvanceHigh(highPeaks[0]));
+                readingFrame.AdvanceHigh(highPeaks[0]);
+                trendSegments.Add(readingFrame.GetTrend());
                 highPeaks.RemoveAt(0);
             }
 
             while (lowPeaks.Count > 0)
             {
-                trendSegments.Add(readingFrame.AdvanceLow(lowPeaks[0]));
+                readingFrame.AdvanceLow(lowPeaks[0]);
+                trendSegments.Add(readingFrame.GetTrend());
                 lowPeaks.RemoveAt(0);
             }
-
+            
             return trendSegments;
         }
 
@@ -297,11 +303,10 @@ namespace cAlgo
             /// <param name="highEndPeak"></param>
             /// <param name="lowEndPeak"></param>
             /// <param name="trendTypeThreshold"></param>
-            public TrendReadingFrame(Algo algo, Peak highStartPeak, Peak highEndPeak, Peak lowEndPeak, double trendTypeThreshold)
+            public TrendReadingFrame(Algo algo, Peak highEndPeak, Peak lowEndPeak, double trendTypeThreshold)
             {
-                ValidateInputPeaks(highStartPeak, highEndPeak, lowEndPeak);
+                ValidateInputPeaks(highEndPeak, lowEndPeak);
 
-                HighStartPeak = highStartPeak;
                 HighEndPeak = highEndPeak;
                 LowEndPeak = lowEndPeak;
 
@@ -309,13 +314,12 @@ namespace cAlgo
                 TrendTypeThreshold = trendTypeThreshold;
             }
 
-            private void ValidateInputPeaks(Peak highStartPeak, Peak highEndPeak, Peak lowEndPeak)
+            private void ValidateInputPeaks(Peak highEndPeak, Peak lowEndPeak)
             {
-                if(highStartPeak.BarIndex != lowEndPeak.BarIndex || 
-                    HighStartPeak.BarIndex >= HighEndPeak.BarIndex)
+                if(highEndPeak.BarIndex != lowEndPeak.BarIndex)
                 {
-                    string message = string.Format("Peaks {0}, {1}, {2} do not form a valid initial reading frame.",
-                        highStartPeak, highEndPeak, lowEndPeak);
+                    string message = string.Format("Peaks {0}, {1} do not form a valid initial reading frame.",
+                        highEndPeak, lowEndPeak);
                     throw new ArgumentException(message);
                 }
             }
@@ -334,11 +338,10 @@ namespace cAlgo
             /// </summary>
             /// <param name="newHighPeak"></param>
             /// <returns></returns>
-            public Trend AdvanceHigh(Peak newHighPeak)
+            public void AdvanceHigh(Peak newHighPeak)
             {
                 HighStartPeak = HighEndPeak;
                 HighEndPeak = newHighPeak;
-                return new Trend(Algo, HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
             }
 
             /// <summary>
@@ -355,10 +358,18 @@ namespace cAlgo
             /// </summary>
             /// <param name="newLowPeak"></param>
             /// <returns></returns>
-            public Trend AdvanceLow(Peak newLowPeak)
+            public void AdvanceLow(Peak newLowPeak)
             {
                 LowStartPeak = LowEndPeak;
                 LowEndPeak = newLowPeak;
+            }
+
+            /// <summary>
+            /// Returns the trend currently in the reading frame
+            /// </summary>
+            /// <returns></returns>
+            public Trend GetTrend()
+            {
                 return new Trend(Algo, HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
             }
         }
