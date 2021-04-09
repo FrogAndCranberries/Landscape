@@ -111,7 +111,7 @@ namespace cAlgo.Robots
             {
                 resistanceLines.Add(trend.GetHighTrendLine());
                 resistanceLines.Add(trend.GetLowTrendLine());
-                if (trend.ShouldGetSupportLine()) resistanceLines.Add(trend.GetSupportLine());
+                if (trend.FormsSupportLine()) resistanceLines.Add(trend.GetSupportLine());
             }
 
             return resistanceLines;

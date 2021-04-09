@@ -49,6 +49,8 @@ namespace cAlgo
         /// <param name="slopeThreshold"></param>
         public Trend(Algo algoAPI, Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double slopeThreshold)
         {
+            ValidateInputPeaks(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak);
+
             HighStartPeak = highStartPeak;
             LowStartPeak = lowStartPeak;
             HighEndPeak = highEndPeak;
@@ -63,6 +65,19 @@ namespace cAlgo
             LowTrendSlope = GetTrendSlope(lowStartPeak, lowEndPeak);
             HighTrendType = GetTrendType(HighTrendSlope, slopeThreshold);
             LowTrendType = GetTrendType(LowTrendSlope, slopeThreshold);
+        }
+
+        private void ValidateInputPeaks(Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak)
+        {
+            if (highStartPeak.BarIndex >= highEndPeak.BarIndex ||
+                lowStartPeak.BarIndex >= lowEndPeak.BarIndex ||
+                highStartPeak.BarIndex >= lowEndPeak.BarIndex ||
+                lowStartPeak.BarIndex >= highEndPeak.BarIndex)
+            {
+                string message = string.Format("Peaks {0}, {1}, {2}, {3} do not form a valid trend core.",
+                    highStartPeak, lowStartPeak, highEndPeak, lowEndPeak);
+                throw new ArgumentException();
+            }
         }
 
         public override string ToString()
@@ -135,7 +150,11 @@ namespace cAlgo
 
         public SupportLine GetSupportLine()
         {
-            // TODO: Check that we shouldGetSupportLine!
+            if(!FormsSupportLine())
+            {
+                string message = string.Format("Trend {0} cannot form a support line.", ToString());
+                throw new InvalidOperationException(message);
+            }
 
             if (HighTrendType == TrendType.Uptrend && LowTrendType == TrendType.Uptrend)
             {
@@ -144,7 +163,7 @@ namespace cAlgo
             return new SupportLine(LowEndPeak.Price, LowEndPeak.BarIndex, LowEndPeak.DateTime, Color.Red);
         }
 
-        public bool ShouldGetSupportLine()
+        public bool FormsSupportLine()
         {
             return (HighTrendType == TrendType.Uptrend && LowTrendType == TrendType.Uptrend) ||
                 (HighTrendType == TrendType.Downtrend && LowTrendType == TrendType.Downtrend);
@@ -204,12 +223,22 @@ namespace cAlgo
         /// <returns>List of all found trends</returns>
         public static List<Trend> GetTrendSegments(Algo algo, List<Peak> peaks, double trendTypethreshold)
         {
-            List<Trend> trendSegments = new List<Trend>();
+            void ValidateInputPeakLists(List<Peak> validatedHighPeaks, List<Peak> validatedLowPeaks)
+            {
+                if (validatedHighPeaks.Count < 2 || validatedLowPeaks.Count < 2)
+                {
+                    string message = "Cannot find trends between less than two high- and two low-price peaks.";
+                    throw new ArgumentException(message);
+                }
+            }
+
 
             List<Peak> highPeaks = peaks.FindAll(peak => peak.FromHighPrice);
             List<Peak> lowPeaks = peaks.FindAll(peak => !peak.FromHighPrice);
 
-            // TODO: Check there are at least two low and two high Peaks
+            ValidateInputPeakLists(highPeaks, lowPeaks);
+
+            List<Trend> trendSegments = new List<Trend>();
 
             TrendReadingFrame readingFrame = new TrendReadingFrame(algo, highPeaks[0], highPeaks[1], lowPeaks[0], trendTypethreshold);
 
@@ -273,13 +302,25 @@ namespace cAlgo
             /// <param name="trendTypeThreshold"></param>
             public TrendReadingFrame(Algo algo, Peak highStartPeak, Peak highEndPeak, Peak lowEndPeak, double trendTypeThreshold)
             {
-                // TODO: check that highStartPeak and LowEndPeak have the same index, and highEndPeak is after that
+                ValidateInputPeaks(highStartPeak, highEndPeak, lowEndPeak);
+
                 HighStartPeak = highStartPeak;
                 HighEndPeak = highEndPeak;
                 LowEndPeak = lowEndPeak;
 
                 Algo = algo;
                 TrendTypeThreshold = trendTypeThreshold;
+            }
+
+            private void ValidateInputPeaks(Peak highStartPeak, Peak highEndPeak, Peak lowEndPeak)
+            {
+                if(highStartPeak.BarIndex != lowEndPeak.BarIndex || 
+                    HighStartPeak.BarIndex >= HighEndPeak.BarIndex)
+                {
+                    string message = string.Format("Peaks {0}, {1}, {2} do not form a valid initial reading frame.",
+                        highStartPeak, highEndPeak, lowEndPeak);
+                    throw new ArgumentException(message);
+                }
             }
 
             /// <summary>
@@ -324,6 +365,7 @@ namespace cAlgo
                 return new Trend(Algo, HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
             }
         }
+
         #endregion
 
         #region Useless
