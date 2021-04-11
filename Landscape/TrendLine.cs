@@ -9,7 +9,7 @@ using cAlgo.Indicators;
 
 namespace cAlgo
 {
-    class TrendLine : IResistanceLine
+    class TrendLine : ResistanceLine
     {
         // price = k*index + q
         public double SlopeConstant;
@@ -34,7 +34,7 @@ namespace cAlgo
             Color = color;
         }
 
-        public void Visualize(Chart chart)
+        public override void Visualize(Chart chart)
         {
             string name = Guid.NewGuid().ToString();
 

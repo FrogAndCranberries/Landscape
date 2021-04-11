@@ -9,8 +9,8 @@ using cAlgo.Indicators;
 
 namespace cAlgo
 {
-    interface IResistanceLine
+    abstract class ResistanceLine
     {
-        void Visualize(Chart chart);
+        abstract public void Visualize(Chart chart);
     }
 }

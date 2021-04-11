@@ -9,7 +9,7 @@ using cAlgo.Indicators;
 
 namespace cAlgo
 {
-    class SupportLine : IResistanceLine
+    class SupportLine : ResistanceLine
     {
         public double Price;
 
@@ -26,7 +26,7 @@ namespace cAlgo
             Color = color;
         }
 
-        public void Visualize(Chart chart)
+        public override void Visualize(Chart chart)
         {
             string name = Guid.NewGuid().ToString();
 

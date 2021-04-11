@@ -110,5 +110,38 @@ namespace cAlgo
                 throw new ArgumentException(message);
             }
         }
+
+        //Useless rest
+        private List<Trend> MergeTrendSegments(List<Trend> trendSegments)
+        {
+            if (trendSegments.Count == 1)
+            {
+                return trendSegments;
+            }
+
+            List<Trend> mergedTrends = new List<Trend>();
+
+            //Combine the short trends if they have the same type
+            Trend currentTrend = trendSegments[0];
+            trendSegments.RemoveAt(0);
+
+            foreach (Trend trend in trendSegments)
+            {
+                if (currentTrend.HasSameTrendType(trend))
+                {
+                    currentTrend.CombineWithFollowingTrend(trend);
+                }
+                else
+                {
+                    mergedTrends.Add(currentTrend);
+                    currentTrend = trend;
+                }
+            }
+
+            //Add the last checked trend
+            mergedTrends.Add(currentTrend);
+
+            return mergedTrends;
+        }
     }
 }

@@ -90,7 +90,7 @@ namespace cAlgo.Robots
 
             List<Trend> trends = trendFinder.FindTrends(peaks);
 
-            List<IResistanceLine> resistanceLines = IdentifyLines(peaks, trends);
+            List<ResistanceLine> resistanceLines = IdentifyLines(peaks, trends);
 
             if (ShouldVisualizePeaks) VisualizePeaks(peaks);
             if (ShouldVisualizeTrendContours) VisualizeTrendsContours(trends);
@@ -105,9 +105,9 @@ namespace cAlgo.Robots
 
         #region IdentifyLines
 
-        private List<IResistanceLine> IdentifyLines(List<Peak> peaks, List<Trend> trends)
+        private List<ResistanceLine> IdentifyLines(List<Peak> peaks, List<Trend> trends)
         {
-            List<IResistanceLine> resistanceLines = new List<IResistanceLine>();
+            List<ResistanceLine> resistanceLines = new List<ResistanceLine>();
 
             // TODO: Deal with very short trends
 
@@ -119,43 +119,6 @@ namespace cAlgo.Robots
             }
 
             return resistanceLines;
-        }
-        #endregion
-
-        #region FindTrends
-
-
-
-        private List<Trend> MergeTrendSegments(List<Trend> trendSegments)
-        {
-            if (trendSegments.Count == 1)
-            {
-                return trendSegments;
-            }
-
-            List<Trend> mergedTrends = new List<Trend>();
-
-            //Combine the short trends if they have the same type
-            Trend currentTrend = trendSegments[0];
-            trendSegments.RemoveAt(0);
-
-            foreach (Trend trend in trendSegments)
-            {
-                if (currentTrend.HasSameTrendType(trend))
-                {
-                    currentTrend.CombineWithFollowingTrend(trend);
-                }
-                else
-                {
-                    mergedTrends.Add(currentTrend);
-                    currentTrend = trend;
-                }
-            }
-
-            //Add the last checked trend
-            mergedTrends.Add(currentTrend);
-
-            return mergedTrends;
         }
         #endregion
 
@@ -188,9 +151,9 @@ namespace cAlgo.Robots
         /// Visualizes each ResistanceLine in a list on the chart
         /// </summary>
         /// <param name="resistanceLines"></param>
-        private void VisualizeResistanceLines(List<IResistanceLine> resistanceLines)
+        private void VisualizeResistanceLines(List<ResistanceLine> resistanceLines)
         {
-            foreach(IResistanceLine resistanceLine in resistanceLines)
+            foreach(ResistanceLine resistanceLine in resistanceLines)
             {
                 resistanceLine.Visualize(Chart);
             }
