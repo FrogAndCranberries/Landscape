@@ -13,14 +13,17 @@ namespace cAlgo
     {
         public double Price;
 
+        public double Intensity;
+
         public int StartIndex;
         public DateTime StartTime;
 
         public Color Color;
 
-        public SupportLine(double price, int startIndex, DateTime startTime, Color color)
+        public SupportLine(double price, double intensity, int startIndex, DateTime startTime, Color color)
         {
             Price = price;
+            Intensity = intensity;
             StartIndex = startIndex;
             StartTime = startTime;
             Color = color;
@@ -30,7 +33,9 @@ namespace cAlgo
         {
             string name = Guid.NewGuid().ToString();
 
-            chart.DrawHorizontalLine(name, Price, Color);
+            int thickness = (int)Intensity / 10; 
+
+            chart.DrawHorizontalLine(name, Price, Color, thickness);
             chart.DrawIcon(name + "start", ChartIconType.Diamond, StartTime, Price, Color);
         }
     }

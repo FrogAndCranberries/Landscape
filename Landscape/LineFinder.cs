@@ -86,11 +86,18 @@ namespace cAlgo
                 throw new InvalidOperationException(message);
             }
 
-            if (trend.HighTrendType == TrendType.Uptrend && trend.LowTrendType == TrendType.Uptrend)
-            {
-                return new SupportLine(trend.HighEndPeak.Price, trend.HighEndPeak.BarIndex, trend.HighEndPeak.DateTime, Color.Green);
-            }
-            return new SupportLine(trend.LowEndPeak.Price, trend.LowEndPeak.BarIndex, trend.LowEndPeak.DateTime, Color.Red);
+            bool isUptrend = trend.HighTrendType == TrendType.Uptrend && trend.LowTrendType == TrendType.Uptrend;
+
+            Color lineColor = isUptrend ? Color.Green : Color.Red;
+
+            double lineIntensity = GetSupportLineIntensity(trend);
+            
+            return new SupportLine(trend.LowEndPeak.Price, lineIntensity, trend.LowEndPeak.BarIndex, trend.LowEndPeak.DateTime, lineColor);
+        }
+
+        private double GetSupportLineIntensity(Trend trend)
+        {
+            return trend.Intensity;
         }
     }
 }
