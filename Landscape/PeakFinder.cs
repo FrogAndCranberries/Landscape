@@ -45,8 +45,7 @@ namespace cAlgo
                         datetime: bars.OpenTimes[index],
                         barIndex: index,
                         price: bars.HighPrices[index],
-                        sourcePeriod: period,
-                        algoAPI: AlgoAPI));
+                        sourcePeriod: period));
                 }
                 else if (isHighPriceMinimum(index, period))
                 {
@@ -56,8 +55,7 @@ namespace cAlgo
                         datetime: bars.OpenTimes[index],
                         barIndex: index,
                         price: bars.HighPrices[index],
-                        sourcePeriod: period,
-                        algoAPI: AlgoAPI));
+                        sourcePeriod: period));
                 }
 
                 // Check if the bar at index is a maximum or minimum of low price in the specified period
@@ -70,8 +68,7 @@ namespace cAlgo
                         datetime: bars.OpenTimes[index],
                         barIndex: index,
                         price: bars.LowPrices[index],
-                        sourcePeriod: period,
-                        algoAPI: AlgoAPI));
+                        sourcePeriod: period));
                 }
                 else if (isLowPriceMinimum(index, period))
                 {
@@ -81,8 +78,7 @@ namespace cAlgo
                         datetime: bars.OpenTimes[index],
                         barIndex: index,
                         price: bars.LowPrices[index],
-                        sourcePeriod: period,
-                        algoAPI: AlgoAPI));
+                        sourcePeriod: period));
                 }
             }
 
@@ -96,8 +92,7 @@ namespace cAlgo
                     datetime: bars.OpenTimes[0],
                     barIndex: 0,
                     price: bars.HighPrices[0],
-                    sourcePeriod: period,
-                    algoAPI: AlgoAPI));
+                    sourcePeriod: period));
             }
 
             // If there is no low price peak at the beginning of bars series, add a peak corresponding to first bar low price
@@ -109,8 +104,7 @@ namespace cAlgo
                     datetime: bars.OpenTimes[0],
                     barIndex: 0,
                     price: bars.LowPrices[0],
-                    sourcePeriod: period,
-                    algoAPI: AlgoAPI));
+                    sourcePeriod: period));
             }
 
             // If there is no high price peak at the end of bars series, add a peak corresponding to last bar high price
@@ -122,8 +116,7 @@ namespace cAlgo
                     datetime: bars.OpenTimes.LastValue,
                     barIndex: bars.Count - 1,
                     price: bars.HighPrices.LastValue,
-                    sourcePeriod: period,
-                    algoAPI: AlgoAPI));
+                    sourcePeriod: period));
             }
 
             // If there is no low price peak at the end of bars series, add a peak corresponding to last bar low price
@@ -135,8 +128,7 @@ namespace cAlgo
                     datetime: bars.OpenTimes.LastValue,
                     barIndex: bars.Count - 1,
                     price: bars.LowPrices.LastValue,
-                    sourcePeriod: period,
-                    algoAPI: AlgoAPI));
+                    sourcePeriod: period));
             }
 
             // Return all found peaks

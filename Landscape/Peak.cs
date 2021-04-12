@@ -35,11 +35,8 @@ namespace cAlgo
         // How important the peak is
         public double Intensity;
 
-        // Access to the Algo API
-        private Algo AlgoAPI;
-
         // General constructor that initializes all fields
-        public Peak(bool fromHighPrice, PeakType peakType, DateTime datetime, int barIndex, double price, int sourcePeriod, Algo algoAPI, double intensity = 1)
+        public Peak(bool fromHighPrice, PeakType peakType, DateTime datetime, int barIndex, double price, int sourcePeriod, double intensity = 1)
         {
             //Initialize all fields
             FromHighPrice = fromHighPrice;
@@ -55,8 +52,6 @@ namespace cAlgo
             SourcePeriod = sourcePeriod;
 
             Intensity = intensity;
-
-            AlgoAPI = algoAPI;
         }
 
         // Override of the ToString method returning a representation useful in logs

@@ -6,7 +6,6 @@ using cAlgo.API;
 using cAlgo.API.Indicators;
 using cAlgo.API.Internals;
 using cAlgo.Indicators;
-using MathNet.Numerics;
 
 namespace cAlgo
 {
@@ -21,7 +20,7 @@ namespace cAlgo
         public Peak HighEndPeak;
         public Peak LowEndPeak;
 
-        private TrendCore Core;
+        public TrendCore Core;
 
         public double HighTrendSlope;
         public double LowTrendSlope;
@@ -110,59 +109,6 @@ namespace cAlgo
             return TrendType.Consolidation;
         }
 
-        /// <summary>
-        /// Returns the Trendline derived from the high prices in the trend core
-        /// </summary>
-        /// <returns></returns>
-        public TrendLine GetHighTrendLine()
-        {
-            int[] coreBarsIndices = Generate.LinearRangeInt32(Core.StartIndex, Core.EndIndex);
-
-            double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.HighPrices[index]).ToArray();
-
-            double[] coreIndicesAsDouble = coreBarsIndices.Select(index => (double)index).ToArray();
-
-            Tuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
-
-            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Core.StartIndex, Core.EndIndex,Color.Green);
-
-            return highTrendLine;
-        }
-
-        /// <summary>
-        /// returns the TrendLine derived from the low prices in the trend core
-        /// </summary>
-        /// <returns></returns>
-        public TrendLine GetLowTrendLine()
-        {
-            int[] coreBarsIndices = Generate.LinearRangeInt32(Core.StartIndex, Core.EndIndex);
-
-            double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.LowPrices[index]).ToArray();
-
-            double[] coreIndicesAsDouble = coreBarsIndices.Select(index => (double)index).ToArray();
-
-            Tuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
-
-            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, Core.StartTime, Core.EndTime, Core.StartIndex, Core.EndIndex, Color.Blue);
-
-            return lowTrendLine;
-        }
-
-        public SupportLine GetSupportLine()
-        {
-            if(!FormsSupportLine())
-            {
-                string message = string.Format("Trend {0} cannot form a support line.", ToString());
-                throw new InvalidOperationException(message);
-            }
-
-            if (HighTrendType == TrendType.Uptrend && LowTrendType == TrendType.Uptrend)
-            {
-                return new SupportLine(HighEndPeak.Price, HighEndPeak.BarIndex, HighEndPeak.DateTime, Color.Green);
-            }
-            return new SupportLine(LowEndPeak.Price, LowEndPeak.BarIndex, LowEndPeak.DateTime, Color.Red);
-        }
-
         public bool FormsSupportLine()
         {
             return (HighTrendType == TrendType.Uptrend && LowTrendType == TrendType.Uptrend) ||
@@ -179,8 +125,6 @@ namespace cAlgo
 
             DrawLineBetweenPeaks(chart, HighStartPeak, HighEndPeak, highPriceColor);
             DrawLineBetweenPeaks(chart, LowStartPeak, LowEndPeak, lowPriceColor);
-
-            AlgoAPI.Print(ToString());
         }
         
         /// <summary>

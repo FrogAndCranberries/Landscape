@@ -93,7 +93,9 @@ namespace cAlgo.Robots
 
             List<Trend> trends = trendFinder.FindTrends(peaks);
 
-            List<ResistanceLine> resistanceLines = IdentifyLines(peaks, trends);
+            LineFinder lineFinder = new LineFinder(this);
+
+            List<ResistanceLine> resistanceLines = lineFinder.FindLines(peaks, trends);
 
             if (ShouldVisualizePeaks) VisualizePeaks(peaks);
             if (ShouldVisualizeTrendContours) VisualizeTrendsContours(trends);
@@ -106,25 +108,15 @@ namespace cAlgo.Robots
                 BaseLines.AddRange(IdentifyLines(period, trendTypeThreshold));
             }*/
         }
-
-        #region IdentifyLines
-
-        private List<ResistanceLine> IdentifyLines(List<Peak> peaks, List<Trend> trends)
+        private void CreateConditions()
         {
-            List<ResistanceLine> resistanceLines = new List<ResistanceLine>();
 
-            // TODO: Deal with very short trends
-
-            foreach(Trend trend in trends)
-            {
-                resistanceLines.Add(trend.GetHighTrendLine());
-                resistanceLines.Add(trend.GetLowTrendLine());
-                if (trend.FormsSupportLine()) resistanceLines.Add(trend.GetSupportLine());
-            }
-
-            return resistanceLines;
         }
-        #endregion
+
+        private void CheckConditions()
+        {
+
+        }
 
         #region Visualization
         /// <summary>
@@ -187,16 +179,6 @@ namespace cAlgo.Robots
             }
         }
         #endregion
-
-        private void CreateConditions()
-        {
-
-        }
-
-        private void CheckConditions()
-        {
-
-        }
 
         #endregion
     }
