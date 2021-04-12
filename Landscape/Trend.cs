@@ -60,6 +60,8 @@ namespace cAlgo
             HighTrendType = GetTrendType(HighTrendSlope, slopeThreshold);
             LowTrendType = GetTrendType(LowTrendSlope, slopeThreshold);
 
+            SourcePeakPeriod = highStartPeak.SourcePeriod;
+
             CalculateIntensity();
         }
 
@@ -70,9 +72,17 @@ namespace cAlgo
                 highStartPeak.BarIndex >= lowEndPeak.BarIndex ||
                 lowStartPeak.BarIndex >= highEndPeak.BarIndex)
             {
-                string message = string.Format("Peaks {0}, {1}, {2}, {3} do not form a valid trend core.",
+                string message = string.Format("Peaks {0}, {1}, {2}, {3} do not form a valid trend.",
                     highStartPeak, lowStartPeak, highEndPeak, lowEndPeak);
-                throw new ArgumentException();
+                throw new ArgumentException(message);
+            }
+
+            int[] allPeriods = new int[] { highStartPeak.SourcePeriod, lowStartPeak.SourcePeriod, highEndPeak.SourcePeriod, lowEndPeak.SourcePeriod };
+            if (!allPeriods.All(period => period == highStartPeak.SourcePeriod))
+            {
+                string message = string.Format("Peaks {0}, {1}, {2}, {3} do not have the same source period.",
+                    highStartPeak, lowStartPeak, highEndPeak, lowEndPeak);
+                throw new ArgumentException(message);
             }
         }
 
@@ -159,10 +169,10 @@ namespace cAlgo
         private void CalculateIntensity()
         {
             double length = Core.LengthInBars;
-            // intensity = MaxIntensity*Logistic(ScatterFactor*(x-MiddleLength))
-            const double MAXINTENSITY = 100;
-            const double STEEPNESS = 0.1;
-            const double MIDDLELENGTH = 2;
+
+            double MAXINTENSITY = 100;
+            double STEEPNESS = 0.1;
+            double MIDDLELENGTH = SourcePeakPeriod * 2;
 
             Intensity = MAXINTENSITY * SpecialFunctions.Logistic(STEEPNESS*(length - MIDDLELENGTH));
         }
