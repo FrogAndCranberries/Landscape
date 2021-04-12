@@ -172,7 +172,7 @@ namespace cAlgo
 
             double MAXINTENSITY = 100;
             double STEEPNESS = 0.1;
-            double MIDDLELENGTH = SourcePeakPeriod * 2;
+            double MIDDLELENGTH = SourcePeakPeriod * 3;
 
             Intensity = MAXINTENSITY * SpecialFunctions.Logistic(STEEPNESS*(length - MIDDLELENGTH));
         }

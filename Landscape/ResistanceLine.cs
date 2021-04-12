@@ -11,6 +11,7 @@ namespace cAlgo
 {
     abstract class ResistanceLine
     {
+        public double Intensity;
         abstract public void Visualize(Chart chart);
     }
 }

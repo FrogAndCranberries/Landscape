@@ -175,7 +175,11 @@ namespace cAlgo.Robots
         {
             foreach (ResistanceLine resistanceLine in resistanceLines)
             {
-                if(resistanceLine is SupportLine) resistanceLine.Visualize(Chart);
+                if (resistanceLine is SupportLine) 
+                {
+                    resistanceLine.Visualize(Chart);
+                    Print(resistanceLine.Intensity);
+                }
             }
         }
         #endregion
