@@ -30,10 +30,35 @@ namespace cAlgo
             {
                 resistanceLines.Add(GetHighTrendLine(trend));
                 resistanceLines.Add(GetLowTrendLine(trend));
-                if (trend.FormsSupportLine()) resistanceLines.Add(GetSupportLine(trend));
+
+                if (trend.FormsSupportLine()) AddSupportLine(trend, resistanceLines);
             }
 
             return resistanceLines;
+        }
+
+        private void AddSupportLine(Trend trend, List<ResistanceLine> resistanceLines)
+        {
+            SupportLine newSupportLine = GetSupportLine(trend);
+
+            double minConst = 0.0015;
+
+            List<ResistanceLine> supportLines = resistanceLines.FindAll(line => line is SupportLine);
+
+            List<SupportLine> nearbySupportLines1 = resistanceLines.Select(line => line as SupportLine).ToList();
+
+            List<SupportLine> nearbySupportLines = nearbySupportLines1.FindAll(line => line != null && Math.Abs(line.Price - newSupportLine.Price) < minConst).ToList();
+
+            if (nearbySupportLines.Count > 0)
+            {
+                SupportLine mergeLine = nearbySupportLines.OrderBy(line => line.Intensity).First();
+                int index = resistanceLines.FindIndex(line => line == mergeLine);
+                resistanceLines[index].Intensity += newSupportLine.Intensity;
+            }
+            else
+            {
+                resistanceLines.Add(newSupportLine);
+            }
         }
 
         /// <summary>
@@ -90,9 +115,11 @@ namespace cAlgo
 
             Color lineColor = isUptrend ? Color.Green : Color.Red;
 
+            double price = isUptrend ? trend.HighEndPeak.Price : trend.LowEndPeak.Price;
+
             double lineIntensity = GetSupportLineIntensity(trend);
             
-            return new SupportLine(trend.LowEndPeak.Price, lineIntensity, trend.LowEndPeak.BarIndex, trend.LowEndPeak.DateTime, lineColor);
+            return new SupportLine(price, lineIntensity, trend.LowEndPeak.BarIndex, trend.LowEndPeak.DateTime, lineColor);
         }
 
         private double GetSupportLineIntensity(Trend trend)
