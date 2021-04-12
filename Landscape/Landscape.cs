@@ -31,7 +31,10 @@ namespace cAlgo.Robots
         public bool ShouldVisualizeTrendContours { get; set; }
 
         [Parameter(DefaultValue = false)]
-        public bool ShouldVisualizeResistanceLines { get; set; }
+        public bool ShouldVisualizeTrendLines { get; set; }
+
+        [Parameter(DefaultValue = false)]
+        public bool ShouldVisualizeSupportLines { get; set; }
 
         #endregion
 
@@ -94,7 +97,8 @@ namespace cAlgo.Robots
 
             if (ShouldVisualizePeaks) VisualizePeaks(peaks);
             if (ShouldVisualizeTrendContours) VisualizeTrendsContours(trends);
-            if (ShouldVisualizeResistanceLines) VisualizeResistanceLines(resistanceLines);
+            if (ShouldVisualizeTrendLines) VisualizeTrendLines(resistanceLines);
+            if (ShouldVisualizeSupportLines) VisualizeSupportLines(resistanceLines);
 
             //Will be used to get multiple landscape layers with different line id periods
             /*foreach(int period in Periods)
@@ -156,6 +160,30 @@ namespace cAlgo.Robots
             foreach(ResistanceLine resistanceLine in resistanceLines)
             {
                 resistanceLine.Visualize(Chart);
+            }
+        }
+
+        /// <summary>
+        /// Visualizes each TrendLine in a list on the chart
+        /// </summary>
+        /// <param name="resistanceLines"></param>
+        private void VisualizeTrendLines(List<ResistanceLine> resistanceLines)
+        {
+            foreach (ResistanceLine resistanceLine in resistanceLines)
+            {
+                if(resistanceLine is TrendLine) resistanceLine.Visualize(Chart);
+            }
+        }
+
+        /// <summary>
+        /// Visualizes each SupportLine in a list on the chart
+        /// </summary>
+        /// <param name="resistanceLines"></param>
+        private void VisualizeSupportLines(List<ResistanceLine> resistanceLines)
+        {
+            foreach (ResistanceLine resistanceLine in resistanceLines)
+            {
+                if(resistanceLine is SupportLine) resistanceLine.Visualize(Chart);
             }
         }
         #endregion
