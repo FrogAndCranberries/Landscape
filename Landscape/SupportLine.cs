@@ -27,8 +27,18 @@ namespace cAlgo
             Color = color;
         }
 
+        public override double IntensityAtBar(int barIndex)
+        {
+            if (barIndex < StartIndex) return 0;
+
+            double intensityDecayConstant = 0.01;
+
+            return Intensity * Math.Pow(10, -intensityDecayConstant * (barIndex - StartIndex));
+        }
+
         public override void Visualize(Chart chart)
         {
+
             string name = Guid.NewGuid().ToString();
 
             int thickness = Math.Max((int)Intensity / 30, 1); 

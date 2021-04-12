@@ -13,5 +13,6 @@ namespace cAlgo
     {
         public double Intensity;
         abstract public void Visualize(Chart chart);
+        abstract public double IntensityAtBar(int barIndex);
     }
 }

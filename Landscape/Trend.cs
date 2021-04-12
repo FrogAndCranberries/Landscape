@@ -170,11 +170,11 @@ namespace cAlgo
         {
             double length = Core.LengthInBars;
 
-            double MAXINTENSITY = 100;
-            double STEEPNESS = 0.1;
-            double MIDDLELENGTH = SourcePeakPeriod * 3;
+            double maxIntensityConstant = 100;
+            double steepnessConstant = 0.1;
+            double middleConstant = SourcePeakPeriod * 3;
 
-            Intensity = MAXINTENSITY * SpecialFunctions.Logistic(STEEPNESS*(length - MIDDLELENGTH));
+            Intensity = maxIntensityConstant * SpecialFunctions.Logistic(steepnessConstant*(length - middleConstant));
         }
 
         #region Useless

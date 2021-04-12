@@ -34,6 +34,11 @@ namespace cAlgo
             Color = color;
         }
 
+        public override double IntensityAtBar(int barIndex)
+        {
+            throw new NotImplementedException();
+        }
+
         public override void Visualize(Chart chart)
         {
             string name = Guid.NewGuid().ToString();

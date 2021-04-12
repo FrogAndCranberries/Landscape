@@ -41,13 +41,13 @@ namespace cAlgo
         {
             SupportLine newSupportLine = GetSupportLine(trend);
 
-            double minConst = 0.0015;
+            double minConstant = 0.0015;
 
             List<ResistanceLine> supportLines = resistanceLines.FindAll(line => line is SupportLine);
 
             List<SupportLine> nearbySupportLines1 = resistanceLines.Select(line => line as SupportLine).ToList();
 
-            List<SupportLine> nearbySupportLines = nearbySupportLines1.FindAll(line => line != null && Math.Abs(line.Price - newSupportLine.Price) < minConst).ToList();
+            List<SupportLine> nearbySupportLines = nearbySupportLines1.FindAll(line => line != null && Math.Abs(line.Price - newSupportLine.Price) < minConstant).ToList();
 
             if (nearbySupportLines.Count > 0)
             {
