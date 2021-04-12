@@ -6,6 +6,7 @@ using cAlgo.API;
 using cAlgo.API.Indicators;
 using cAlgo.API.Internals;
 using cAlgo.Indicators;
+using MathNet.Numerics;
 
 namespace cAlgo
 {
@@ -31,10 +32,6 @@ namespace cAlgo
         public int SourcePeakPeriod;
 
         public double Intensity;
-
-        // Access to the Algo API
-        private Algo AlgoAPI;
-
         #endregion
 
         /// <summary>
@@ -46,7 +43,7 @@ namespace cAlgo
         /// <param name="highEndPeak"></param>
         /// <param name="lowEndPeak"></param>
         /// <param name="slopeThreshold"></param>
-        public Trend(Algo algoAPI, Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double slopeThreshold)
+        public Trend(Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak, double slopeThreshold)
         {
             ValidateInputPeaks(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak);
 
@@ -57,13 +54,13 @@ namespace cAlgo
 
             Core = new TrendCore(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak);
 
-            AlgoAPI = algoAPI;
-
             // TODO: Add a source period check and assignment
             HighTrendSlope = GetTrendSlope(highStartPeak, highEndPeak);
             LowTrendSlope = GetTrendSlope(lowStartPeak, lowEndPeak);
             HighTrendType = GetTrendType(HighTrendSlope, slopeThreshold);
             LowTrendType = GetTrendType(LowTrendSlope, slopeThreshold);
+
+            CalculateIntensity();
         }
 
         private void ValidateInputPeaks(Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak)
@@ -158,6 +155,17 @@ namespace cAlgo
             chart.DrawTrendLine(name, startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price, color);
         }
         #endregion
+
+        private void CalculateIntensity()
+        {
+            double length = Core.LengthInBars;
+            // intensity = MaxIntensity*Logistic(ScatterFactor*(x-MiddleLength))
+            const double MAXINTENSITY = 100;
+            const double STEEPNESS = 0.1;
+            const double MIDDLELENGTH = 2;
+
+            Intensity = MAXINTENSITY * SpecialFunctions.Logistic(STEEPNESS*(length - MIDDLELENGTH));
+        }
 
         #region Useless
         // TODO: following functions either obsolete or need reworking
