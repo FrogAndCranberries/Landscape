@@ -24,6 +24,7 @@ namespace cAlgo
             List<ResistanceLine> resistanceLines = new List<ResistanceLine>();
 
             // TODO: Deal with very short trends
+            // TODO: If trendline is almost flat, turn it into supportLine
 
             foreach (Trend trend in trends)
             {

@@ -28,9 +28,6 @@ namespace cAlgo
         /// <returns></returns>
         public List<Trend> FindTrends(List<Peak> peaks)
         {
-            //Stores finally merged TrendSegments
-            List<Trend> trends = new List<Trend>();
-
             List<Trend> trendSegments = GetTrendSegments(peaks);
 
             return trendSegments;
@@ -52,7 +49,7 @@ namespace cAlgo
 
             List<Trend> trendSegments = new List<Trend>();
 
-            TrendReadingFrame readingFrame = new TrendReadingFrame(AlgoAPI, highPeaks[0], lowPeaks[0], TrendTypeThreshold);
+            TrendReadingFrame readingFrame = new TrendReadingFrame(highPeaks[0], lowPeaks[0], TrendTypeThreshold);
 
             highPeaks.RemoveAt(0);
             lowPeaks.RemoveAt(0);

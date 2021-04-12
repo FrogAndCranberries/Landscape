@@ -19,7 +19,6 @@ namespace cAlgo
         Peak HighEndPeak;
         Peak LowEndPeak;
 
-        Algo Algo;
         double TrendTypeThreshold;
 
         /// <summary>
@@ -30,14 +29,13 @@ namespace cAlgo
         /// <param name="highEndPeak"></param>
         /// <param name="lowEndPeak"></param>
         /// <param name="trendTypeThreshold"></param>
-        public TrendReadingFrame(Algo algo, Peak highEndPeak, Peak lowEndPeak, double trendTypeThreshold)
+        public TrendReadingFrame(Peak highEndPeak, Peak lowEndPeak, double trendTypeThreshold)
         {
             ValidateInputPeaks(highEndPeak, lowEndPeak);
 
             HighEndPeak = highEndPeak;
             LowEndPeak = lowEndPeak;
 
-            Algo = algo;
             TrendTypeThreshold = trendTypeThreshold;
         }
 
@@ -97,7 +95,7 @@ namespace cAlgo
         /// <returns></returns>
         public Trend GetTrend()
         {
-            return new Trend(Algo, HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
+            return new Trend(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak, TrendTypeThreshold);
         }
     }
 }
