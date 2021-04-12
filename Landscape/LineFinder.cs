@@ -41,7 +41,7 @@ namespace cAlgo
         {
             SupportLine newSupportLine = GetSupportLine(trend);
 
-            double minConstant = 0.0015;
+            double minConstant = 0.00;
 
             List<ResistanceLine> supportLines = resistanceLines.FindAll(line => line is SupportLine);
 

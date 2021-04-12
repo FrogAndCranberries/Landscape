@@ -31,7 +31,7 @@ namespace cAlgo
         {
             if (barIndex < StartIndex) return 0;
 
-            double intensityDecayConstant = 0.01;
+            double intensityDecayConstant = 0.005;
 
             return Intensity * Math.Pow(10, -intensityDecayConstant * (barIndex - StartIndex));
         }
