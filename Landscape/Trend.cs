@@ -16,22 +16,22 @@ namespace cAlgo
     class Trend
     {
         #region Fields
-        public Peak HighStartPeak;
-        public Peak LowStartPeak;
-        public Peak HighEndPeak;
-        public Peak LowEndPeak;
+        public Peak HighStartPeak { get; }
+        public Peak LowStartPeak { get; }
+        public Peak HighEndPeak { get; }
+        public Peak LowEndPeak { get; }
 
-        public TrendCore Core;
+        public TrendCore Core { get; }
 
-        public double HighTrendSlope;
-        public double LowTrendSlope;
+        public double HighTrendSlope { get; }
+        public double LowTrendSlope { get; }
 
-        public TrendType HighTrendType;
-        public TrendType LowTrendType;
+        public TrendType HighTrendType { get; }
+        public TrendType LowTrendType { get; }
 
-        public int SourcePeakPeriod;
+        public int SourcePeakPeriod { get; }
 
-        public double Intensity;
+        public double Intensity { get; private set; }
         #endregion
 
         /// <summary>
@@ -188,6 +188,7 @@ namespace cAlgo
         }
 
         //TODO: behavior related to other properties
+        /*
         public void CombineWithFollowingTrend(Trend followingTrend)
         {
             bool trendFollows = (HighEndPeak == followingTrend.HighStartPeak && LowEndPeak == followingTrend.LowStartPeak) ||
@@ -200,7 +201,7 @@ namespace cAlgo
             HighEndPeak = followingTrend.HighEndPeak;
             LowEndPeak = followingTrend.LowEndPeak;
         }
-
+        */
         #endregion
     }
 }

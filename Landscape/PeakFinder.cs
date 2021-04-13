@@ -12,7 +12,7 @@ namespace cAlgo
     class PeakFinder
     {
 
-        private Algo AlgoAPI;
+        private Algo AlgoAPI { get; set; }
 
         public PeakFinder(Algo algoAPI)
         {
