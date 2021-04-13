@@ -14,12 +14,12 @@ namespace cAlgo
     /// </summary>
     class TrendReadingFrame
     {
-        Peak HighStartPeak;
-        Peak LowStartPeak;
-        Peak HighEndPeak;
-        Peak LowEndPeak;
+        private Peak HighStartPeak { get; set; }
+        private Peak LowStartPeak { get; set; }
+        private Peak HighEndPeak { get; set; }
+        private Peak LowEndPeak { get; set; }
 
-        double TrendTypeThreshold;
+        private double TrendTypeThreshold { get; set; }
 
         /// <summary>
         /// Sets three out of the four peaks, the fourth will be pushed in at the first advance

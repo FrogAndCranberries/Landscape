@@ -11,8 +11,8 @@ namespace cAlgo
 {
     class TrendFinder
     {
-        private Algo AlgoAPI;
-        private double TrendTypeThreshold;
+        private Algo AlgoAPI { get; }
+        private double TrendTypeThreshold { get; }
 
 
         public TrendFinder(Algo algoAPI, int trendTypeThreshold)
