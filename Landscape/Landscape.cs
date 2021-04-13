@@ -173,7 +173,7 @@ namespace cAlgo.Robots
         /// <param name="resistanceLines"></param>
         private void VisualizeSupportLines(List<ResistanceLine> resistanceLines)
         {
-            double thresholdI = 2;
+            double thresholdI = 0;
             foreach (ResistanceLine resistanceLine in resistanceLines)
             {
                 if (resistanceLine is SupportLine) 

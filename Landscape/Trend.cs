@@ -172,7 +172,7 @@ namespace cAlgo
 
             double maxIntensityConstant = 100;
             double steepnessConstant = 0.1;
-            double middleConstant = SourcePeakPeriod * 3;
+            double middleConstant = 15;
 
             Intensity = maxIntensityConstant * SpecialFunctions.Logistic(steepnessConstant*(length - middleConstant));
         }

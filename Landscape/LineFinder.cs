@@ -113,13 +113,11 @@ namespace cAlgo
 
             bool isUptrend = trend.HighTrendType == TrendType.Uptrend && trend.LowTrendType == TrendType.Uptrend;
 
-            Color lineColor = isUptrend ? Color.Green : Color.Red;
-
             double price = isUptrend ? trend.HighEndPeak.Price : trend.LowEndPeak.Price;
 
             double lineIntensity = GetSupportLineIntensity(trend);
             
-            return new SupportLine(price, lineIntensity, trend.LowEndPeak.BarIndex, trend.LowEndPeak.DateTime, lineColor);
+            return new SupportLine(price, lineIntensity, trend.LowEndPeak.BarIndex, trend.LowEndPeak.DateTime);
         }
 
         private double GetSupportLineIntensity(Trend trend)

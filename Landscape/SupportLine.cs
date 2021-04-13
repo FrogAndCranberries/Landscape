@@ -16,15 +16,12 @@ namespace cAlgo
         public int StartIndex;
         public DateTime StartTime;
 
-        public Color Color;
-
-        public SupportLine(double price, double intensity, int startIndex, DateTime startTime, Color color)
+        public SupportLine(double price, double intensity, int startIndex, DateTime startTime)
         {
             Price = price;
             Intensity = intensity;
             StartIndex = startIndex;
             StartTime = startTime;
-            Color = color;
         }
 
         public override double IntensityAtBar(int barIndex)
@@ -38,13 +35,21 @@ namespace cAlgo
 
         public override void Visualize(Chart chart)
         {
-
             string name = Guid.NewGuid().ToString();
 
-            int thickness = Math.Max((int)Intensity / 30, 1); 
+            chart.DrawHorizontalLine(name, Price, GetColor(), 2);
+            chart.DrawIcon(name + "start", ChartIconType.Diamond, StartTime, Price, GetColor());
+        }
 
-            chart.DrawHorizontalLine(name, Price, Color, thickness);
-            chart.DrawIcon(name + "start", ChartIconType.Diamond, StartTime, Price, Color);
+        private Color GetColor()
+        {
+            double middleIntensityConstant = 40;
+            double steepnessConstant = 0.05;
+
+            double shift = 255 / (1 + Math.Pow(2, -steepnessConstant * (Intensity - middleIntensityConstant)));
+            int blue = 255 - (int)shift;
+            int red = (int)shift;
+            return Color.FromArgb(200, red, 30, blue);
         }
     }
 }
