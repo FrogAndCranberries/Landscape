@@ -33,6 +33,11 @@ namespace cAlgo
             return Intensity * Math.Pow(10, -intensityDecayConstant * (barIndex - StartIndex));
         }
 
+        public void UpdateIntensity(double increment)
+        {
+            Intensity += increment;
+        }
+
         public override void Visualize(Chart chart)
         {
             string name = Guid.NewGuid().ToString();

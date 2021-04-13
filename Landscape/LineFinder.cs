@@ -12,7 +12,7 @@ namespace cAlgo
 {
     class LineFinder
     {
-        private Algo AlgoAPI { get; }
+        private Algo AlgoAPI { get; set; }
 
         public LineFinder(Algo algoAPI)
         {
@@ -53,7 +53,7 @@ namespace cAlgo
             {
                 SupportLine mergeLine = nearbySupportLines.OrderBy(line => line.Intensity).First();
                 int index = resistanceLines.FindIndex(line => line == mergeLine);
-                resistanceLines[index].Intensity += newSupportLine.Intensity;
+                (resistanceLines[index] as SupportLine).UpdateIntensity(newSupportLine.Intensity);
             }
             else
             {
@@ -116,8 +116,11 @@ namespace cAlgo
             double price = isUptrend ? trend.HighEndPeak.Price : trend.LowEndPeak.Price;
 
             double lineIntensity = GetSupportLineIntensity(trend);
-            
-            return new SupportLine(price, lineIntensity, trend.LowEndPeak.BarIndex, trend.LowEndPeak.DateTime);
+
+            SupportLine newSupportLine = isUptrend ? new SupportLine(price, lineIntensity, trend.HighEndPeak.BarIndex, trend.HighEndPeak.DateTime) :
+                new SupportLine(price, lineIntensity, trend.LowEndPeak.BarIndex, trend.LowEndPeak.DateTime);
+
+            return newSupportLine;
         }
 
         private double GetSupportLineIntensity(Trend trend)
