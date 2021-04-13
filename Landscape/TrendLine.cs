@@ -12,12 +12,12 @@ namespace cAlgo
     class TrendLine : ResistanceLine
     {
         // price = k*index + q
-        public double SlopeConstant { get; }
-        public double IntersectionConstant { get; }
+        public double SlopeConstant { get; private set; }
+        public double IntersectionConstant { get; private set; }
 
-        public TrendCore Core { get; }
+        public TrendCore Core { get; private set; }
 
-        private Color Color { get; }
+        private Color Color { get; set; }
 
         public TrendLine(double slopeConstant, double intersectionConstant, TrendCore core, Color color)
         {

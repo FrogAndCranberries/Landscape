@@ -16,20 +16,20 @@ namespace cAlgo
     class Trend
     {
         #region Fields
-        public Peak HighStartPeak { get; }
-        public Peak LowStartPeak { get; }
-        public Peak HighEndPeak { get; }
-        public Peak LowEndPeak { get; }
+        public Peak HighStartPeak { get; private set; }
+        public Peak LowStartPeak { get; private set; }
+        public Peak HighEndPeak { get; private set; }
+        public Peak LowEndPeak { get; private set; }
 
-        public TrendCore Core { get; }
+        public TrendCore Core { get; private set; }
 
-        public double HighTrendSlope { get; }
-        public double LowTrendSlope { get; }
+        public double HighTrendSlope { get; private set; }
+        public double LowTrendSlope { get; private set; }
 
-        public TrendType HighTrendType { get; }
-        public TrendType LowTrendType { get; }
+        public TrendType HighTrendType { get; private set; }
+        public TrendType LowTrendType { get; private set; }
 
-        public int SourcePeakPeriod { get; }
+        public int SourcePeakPeriod { get; private set; }
 
         public double Intensity { get; private set; }
         #endregion

@@ -10,14 +10,14 @@ namespace cAlgo
     /// </summary>
     class TrendCore
     {
-        public DateTime StartTime { get; }
-        public DateTime EndTime { get; }
+        public DateTime StartTime { get; private set; }
+        public DateTime EndTime { get; private set; }
 
-        public int StartIndex { get; }
-        public int EndIndex { get; }
+        public int StartIndex { get; private set; }
+        public int EndIndex { get; private set; }
 
-        public TimeSpan Length { get; }
-        public int LengthInBars { get; }
+        public TimeSpan Length { get; private set; }
+        public int LengthInBars { get; private set; }
 
         public TrendCore(Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak)
         {

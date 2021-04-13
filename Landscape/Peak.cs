@@ -14,17 +14,17 @@ namespace cAlgo
     /// </summary>
     class Peak
     {
-        public bool FromHighPrice { get; }
+        public bool FromHighPrice { get; private set; }
 
-        public PeakType PeakType { get; }
+        public PeakType PeakType { get; private set; }
 
-        public DateTime DateTime { get; }
+        public DateTime DateTime { get; private set; }
 
-        public int BarIndex { get; }
+        public int BarIndex { get; private set; }
 
-        public double Price { get; }
+        public double Price { get; private set; }
 
-        public int SourcePeriod { get; }
+        public int SourcePeriod { get; private set; }
 
         public double Intensity { get; private set; }
 
