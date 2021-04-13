@@ -12,25 +12,18 @@ namespace cAlgo
     class TrendLine : ResistanceLine
     {
         // price = k*index + q
-        public double SlopeConstant;
-        public double IntersectionConstant;
+        public double SlopeConstant { get; }
+        public double IntersectionConstant { get; }
 
-        public DateTime CoreStart;
-        public DateTime CoreEnd;
+        public TrendCore Core { get; }
 
-        public int CoreStartIndex;
-        public int CoreEndIndex;
+        private Color Color { get; }
 
-        Color Color;
-
-        public TrendLine(double slopeConstant, double intersectionConstant, DateTime coreStart, DateTime coreEnd, int coreStartIndex, int coreEndIndex, Color color)
+        public TrendLine(double slopeConstant, double intersectionConstant, TrendCore core, Color color)
         {
             SlopeConstant = slopeConstant;
             IntersectionConstant = intersectionConstant;
-            CoreStart = coreStart;
-            CoreEnd = coreEnd;
-            CoreStartIndex = coreStartIndex;
-            CoreEndIndex = coreEndIndex;
+            Core = core;
             Color = color;
         }
 
@@ -43,10 +36,10 @@ namespace cAlgo
         {
             string name = Guid.NewGuid().ToString();
 
-            double coreStartPrice = SlopeConstant * CoreStartIndex + IntersectionConstant;
-            double coreEndPrice = SlopeConstant * CoreEndIndex + IntersectionConstant;
+            double coreStartPrice = SlopeConstant * Core.StartIndex + IntersectionConstant;
+            double coreEndPrice = SlopeConstant * Core.EndIndex + IntersectionConstant;
 
-            chart.DrawTrendLine(name, CoreStartIndex, coreStartPrice, CoreEndIndex, coreEndPrice, Color);
+            chart.DrawTrendLine(name, Core.StartIndex, coreStartPrice, Core.EndIndex, coreEndPrice, Color);
         }
     }
 }
