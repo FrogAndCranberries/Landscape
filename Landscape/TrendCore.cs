@@ -10,21 +10,21 @@ namespace cAlgo
     /// </summary>
     class TrendCore
     {
-        public DateTime StartTime;
-        public DateTime EndTime;
+        public DateTime StartTime { get; }
+        public DateTime EndTime { get; }
 
-        public int StartIndex;
-        public int EndIndex;
+        public int StartIndex { get; }
+        public int EndIndex { get; }
 
-        public TimeSpan Length;
-        public int LengthInBars;
+        public TimeSpan Length { get; }
+        public int LengthInBars { get; }
 
         public TrendCore(Peak highStartPeak, Peak lowStartPeak, Peak highEndPeak, Peak lowEndPeak)
         {
             ValidateInputPeaks(highStartPeak, lowStartPeak, highEndPeak, lowEndPeak);
 
-            Peak coreStartPeak = highStartPeak.BarIndex > lowStartPeak.BarIndex ? highStartPeak : lowStartPeak;
-            Peak coreEndPeak = highEndPeak.BarIndex < lowEndPeak.BarIndex ? highEndPeak : lowEndPeak;
+            Peak coreStartPeak = (highStartPeak.BarIndex > lowStartPeak.BarIndex) ? highStartPeak : lowStartPeak;
+            Peak coreEndPeak = (highEndPeak.BarIndex < lowEndPeak.BarIndex) ? highEndPeak : lowEndPeak;
 
             StartTime = coreStartPeak.DateTime;
             EndTime = coreEndPeak.DateTime;
@@ -45,7 +45,7 @@ namespace cAlgo
             {
                 string message = string.Format("Peaks {0}, {1}, {2}, {3} do not form a valid trend core.",
                     highStartPeak, lowStartPeak, highEndPeak, lowEndPeak);
-                throw new ArgumentException();
+                throw new ArgumentException(message);
             }
         }
 
