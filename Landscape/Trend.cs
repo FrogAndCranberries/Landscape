@@ -161,7 +161,7 @@ namespace cAlgo
         /// <param name="color"></param>
         private void DrawLineBetweenPeaks(Chart chart, Peak startPeak, Peak endPeak, Color color)
         {
-            string name = string.Format("{0}_{1}_to_{2}_{3}_trend", startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price);
+            string name = Guid.NewGuid().ToString();
             chart.DrawTrendLine(name, startPeak.DateTime, startPeak.Price, endPeak.DateTime, endPeak.Price, color);
         }
         #endregion
@@ -176,32 +176,5 @@ namespace cAlgo
 
             Intensity = maxIntensityConstant * SpecialFunctions.Logistic(steepnessConstant*(length - middleConstant));
         }
-
-        #region Useless
-        // TODO: following functions either obsolete or need reworking
-
-
-        public bool HasSameTrendType(Trend other)
-        {
-            // TODO: implement or delete
-            return false;
-        }
-
-        //TODO: behavior related to other properties
-        /*
-        public void CombineWithFollowingTrend(Trend followingTrend)
-        {
-            bool trendFollows = (HighEndPeak == followingTrend.HighStartPeak && LowEndPeak == followingTrend.LowStartPeak) ||
-                (HighEndPeak == followingTrend.HighStartPeak && LowEndPeak == followingTrend.LowEndPeak) ||
-                (LowEndPeak == followingTrend.LowStartPeak && HighEndPeak == followingTrend.HighEndPeak);
-            if (!trendFollows)
-            {
-                throw new ArgumentException(string.Format("{0} does not follow {1}, so they cannot be merged.", followingTrend.ToString(), ToString()));
-            }
-            HighEndPeak = followingTrend.HighEndPeak;
-            LowEndPeak = followingTrend.LowEndPeak;
-        }
-        */
-        #endregion
     }
 }

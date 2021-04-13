@@ -12,7 +12,7 @@ namespace cAlgo
 {
     class LineFinder
     {
-        Algo AlgoAPI;
+        private Algo AlgoAPI { get; }
 
         public LineFinder(Algo algoAPI)
         {
@@ -77,7 +77,7 @@ namespace cAlgo
 
             Tuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
 
-            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, core.StartTime, core.EndTime, core.StartIndex, core.EndIndex, Color.Green);
+            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, core, Color.Green);
 
             return highTrendLine;
         }
@@ -98,7 +98,7 @@ namespace cAlgo
 
             Tuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
 
-            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, core.StartTime, core.EndTime, core.StartIndex, core.EndIndex, Color.Blue);
+            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, core, Color.Blue);
 
             return lowTrendLine;
         }
