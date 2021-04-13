@@ -14,31 +14,23 @@ namespace cAlgo
     /// </summary>
     class Peak
     {
-        // Whether the peak came from high price
-        public bool FromHighPrice;
+        public bool FromHighPrice { get; }
 
-        // Whether the peak is a maximum or a minimum
-        public PeakType PeakType;
+        public PeakType PeakType { get; }
 
-        // The date and time (x-coordinate) of the peak
-        public DateTime DateTime;
+        public DateTime DateTime { get; }
 
-        // The index of the bar with the peak in Bars
-        public int BarIndex;
+        public int BarIndex { get; }
 
-        // The price (y-coordinate) of the peak
-        public double Price;
+        public double Price { get; }
 
-        // The search period at which was the peak found
-        public int SourcePeriod;
+        public int SourcePeriod { get; }
 
-        // How important the peak is
-        public double Intensity;
+        public double Intensity { get; private set; }
 
         // General constructor that initializes all fields
-        public Peak(bool fromHighPrice, PeakType peakType, DateTime datetime, int barIndex, double price, int sourcePeriod, double intensity = 1)
+        public Peak(bool fromHighPrice, PeakType peakType, DateTime datetime, int barIndex, double price, int sourcePeriod)
         {
-            //Initialize all fields
             FromHighPrice = fromHighPrice;
 
             PeakType = peakType;
@@ -51,7 +43,7 @@ namespace cAlgo
 
             SourcePeriod = sourcePeriod;
 
-            Intensity = intensity;
+            CalculateIntensity();
         }
 
         // Override of the ToString method returning a representation useful in logs
@@ -66,11 +58,10 @@ namespace cAlgo
         /// </summary>
         public void Visualize(Chart chart)
         {
-            //Determine the color of the peak
             Color peakColor = GetPeakColor();
-            //The peak has a unique name in the format DateTime_high or DateTime_low
-            string name = DateTime.ToString() + (FromHighPrice ? "_high" : "_low") + "_peak";
-            //Draw the peak on the chart
+
+            string name = Guid.NewGuid().ToString();
+
             chart.DrawIcon(name, ChartIconType.Circle, DateTime, Price, peakColor);
         }
 
@@ -82,29 +73,14 @@ namespace cAlgo
         {
             if (FromHighPrice)
             {
-                switch (PeakType)
-                {
-                    case PeakType.Maximum:
-                        //High price maximum is green
-                        return Color.Green;
-                    default:
-                        //High price minimum is yellow
-                        return Color.Yellow;
-                }
+                return (PeakType == PeakType.Maximum) ? Color.Green : Color.Yellow;
             }
-            else
-            {
-                switch (PeakType)
-                {
-                    case PeakType.Maximum:
-                        //Low price maximum is orange
-                        return Color.Orange;
-                    default:
-                        //Low price minimum is red
-                        return Color.Red;
-                }
-            }
+            return (PeakType == PeakType.Maximum) ? Color.Orange : Color.Red;
+        }
 
+        private void CalculateIntensity()
+        {
+            Intensity = 1;
         }
     }
 }
