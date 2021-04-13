@@ -11,10 +11,10 @@ namespace cAlgo
 {
     class SupportLine : ResistanceLine
     {
-        public double Price;
+        public double Price { get; }
 
-        public int StartIndex;
-        public DateTime StartTime;
+        public int StartIndex { get; }
+        public DateTime StartTime { get; }
 
         public SupportLine(double price, double intensity, int startIndex, DateTime startTime)
         {
