@@ -24,6 +24,12 @@ namespace cAlgo
             StartIndex = startPeak.BarIndex;
             StartTime = startPeak.DateTime;
             Intensity = intensity;
+            JointIndices = new List<int>();
+        }
+
+        public override string ToString()
+        {
+            return string.Format("SupportLine at Price {0}, StartIndex {1}, Intensity {2}.", Price, StartIndex, Intensity);
         }
 
         public override double IntensityAtBar(int barIndex)
@@ -58,6 +64,11 @@ namespace cAlgo
 
             chart.DrawHorizontalLine(name, Price, GetColor(), 2);
             chart.DrawIcon(name + "start", ChartIconType.Diamond, StartTime, Price, GetColor());
+
+            foreach(int joint in JointIndices)
+            {
+                chart.DrawIcon(name + joint, ChartIconType.Star, StartTime, Price, GetColor());
+            }
         }
 
         private Color GetColor()

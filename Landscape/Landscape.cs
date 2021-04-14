@@ -24,6 +24,9 @@ namespace cAlgo.Robots
         [Parameter(DefaultValue = 1, MinValue = 0, MaxValue = 100)]
         public int trendTypeThreshold { get; set; }
 
+        [Parameter(DefaultValue = 0, MinValue = 0, MaxValue = 100)]
+        public int SupportLineDistanceToMergeInPips { get; set; }
+
         [Parameter(DefaultValue = false)]
         public bool ShouldVisualizePeaks { get; set; }
 
@@ -95,7 +98,7 @@ namespace cAlgo.Robots
 
             LineFinder lineFinder = new LineFinder(this);
 
-            List<ResistanceLine> resistanceLines = lineFinder.FindLines(peaks, trends);
+            List<ResistanceLine> resistanceLines = lineFinder.FindLines(peaks, trends, SupportLineDistanceToMergeInPips);
 
             if (ShouldVisualizePeaks) VisualizePeaks(peaks);
             if (ShouldVisualizeTrendContours) VisualizeTrendsContours(trends);
@@ -173,18 +176,10 @@ namespace cAlgo.Robots
         /// <param name="resistanceLines"></param>
         private void VisualizeSupportLines(List<ResistanceLine> resistanceLines)
         {
-            double thresholdI = 0;
             foreach (ResistanceLine resistanceLine in resistanceLines)
             {
                 if (resistanceLine is SupportLine) 
                 {
-                    Print(resistanceLine.Intensity);
-                    Print(resistanceLine.IntensityAtBar(Bars.Count - 1));
-                    if (resistanceLine.IntensityAtBar(Bars.Count - 1) < thresholdI)
-                    {
-                        Print("nope");
-                        continue;
-                    }
                     resistanceLine.Visualize(Chart);
                 }
             }

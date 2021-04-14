@@ -19,7 +19,7 @@ namespace cAlgo
             AlgoAPI = algoAPI;
         }
 
-        public List<ResistanceLine> FindLines(List<Peak> peaks, List<Trend> trends)
+        public List<ResistanceLine> FindLines(List<Peak> peaks, List<Trend> trends, int supportLineDistanceToMergeInPips)
         {
             List<ResistanceLine> resistanceLines = new List<ResistanceLine>();
 
@@ -31,16 +31,16 @@ namespace cAlgo
                 resistanceLines.Add(GetHighTrendLine(trend));
                 resistanceLines.Add(GetLowTrendLine(trend));
             }
-            resistanceLines.AddRange(GetSupportLines(trends));
+            resistanceLines.AddRange(GetSupportLines(trends, supportLineDistanceToMergeInPips));
 
             return resistanceLines;
         }
 
-        private List<ResistanceLine> GetSupportLines(List<Trend> trends)
+        private List<ResistanceLine> GetSupportLines(List<Trend> trends, int supportLineDistanceToMergeInPips)
         {
             List<SupportLine> supportLines = new List<SupportLine>();
 
-            double minimalSupportLineDistanceToMergeConstant = 0.0;
+            double minimalSupportLineDistanceToMergeConstant = supportLineDistanceToMergeInPips * AlgoAPI.Symbol.PipSize;
 
             foreach(Trend trend in trends)
             {
@@ -49,7 +49,7 @@ namespace cAlgo
                 SupportLine newLine = GetSupportLine(trend);
 
                 List<SupportLine> closeLines = supportLines.FindAll(
-                    line => Math.Abs(line.Price - newLine.Price) < minimalSupportLineDistanceToMergeConstant);
+                    line => line != null && Math.Abs(line.Price - newLine.Price) < minimalSupportLineDistanceToMergeConstant);
                 
                 if(closeLines.Count == 0)
                 {
