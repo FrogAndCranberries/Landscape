@@ -30,35 +30,38 @@ namespace cAlgo
             {
                 resistanceLines.Add(GetHighTrendLine(trend));
                 resistanceLines.Add(GetLowTrendLine(trend));
-
-                if (trend.FormsSupportLine()) AddSupportLine(trend, resistanceLines);
             }
+            resistanceLines.AddRange(GetSupportLines(trends));
 
             return resistanceLines;
         }
 
-        private void AddSupportLine(Trend trend, List<ResistanceLine> resistanceLines)
+        private List<ResistanceLine> GetSupportLines(List<Trend> trends)
         {
-            SupportLine newSupportLine = GetSupportLine(trend);
+            List<SupportLine> supportLines = new List<SupportLine>();
 
-            double minConstant = 0.00;
+            double minimalSupportLineDistanceToMergeConstant = 0.0;
 
-            List<ResistanceLine> supportLines = resistanceLines.FindAll(line => line is SupportLine);
-
-            List<SupportLine> nearbySupportLines1 = resistanceLines.Select(line => line as SupportLine).ToList();
-
-            List<SupportLine> nearbySupportLines = nearbySupportLines1.FindAll(line => line != null && Math.Abs(line.Price - newSupportLine.Price) < minConstant).ToList();
-
-            if (nearbySupportLines.Count > 0)
+            foreach(Trend trend in trends)
             {
-                SupportLine mergeLine = nearbySupportLines.OrderBy(line => line.Intensity).First();
-                int index = resistanceLines.FindIndex(line => line == mergeLine);
-                (resistanceLines[index] as SupportLine).UpdateIntensity(newSupportLine.Intensity);
+                if (!trend.FormsSupportLine()) continue;
+
+                SupportLine newLine = GetSupportLine(trend);
+
+                List<SupportLine> closeLines = supportLines.FindAll(
+                    line => Math.Abs(line.Price - newLine.Price) < minimalSupportLineDistanceToMergeConstant);
+                
+                if(closeLines.Count == 0)
+                {
+                    supportLines.Add(newLine);
+                    continue;
+                }
+
+                SupportLine mostIntensiveLine = closeLines.OrderByDescending(line => line.Intensity).First();
+                mostIntensiveLine.MergeWithLine(newLine);
             }
-            else
-            {
-                resistanceLines.Add(newSupportLine);
-            }
+
+            return supportLines.Select(supportLine => supportLine as ResistanceLine).ToList();
         }
 
         /// <summary>
@@ -113,12 +116,11 @@ namespace cAlgo
 
             bool isUptrend = trend.HighTrendType == TrendType.Uptrend && trend.LowTrendType == TrendType.Uptrend;
 
-            double price = isUptrend ? trend.HighEndPeak.Price : trend.LowEndPeak.Price;
+            Peak endPeak = isUptrend ? trend.HighEndPeak : trend.LowEndPeak;
 
             double lineIntensity = GetSupportLineIntensity(trend);
 
-            SupportLine newSupportLine = isUptrend ? new SupportLine(price, lineIntensity, trend.HighEndPeak.BarIndex, trend.HighEndPeak.DateTime) :
-                new SupportLine(price, lineIntensity, trend.LowEndPeak.BarIndex, trend.LowEndPeak.DateTime);
+            SupportLine newSupportLine = new SupportLine(endPeak, lineIntensity);
 
             return newSupportLine;
         }
