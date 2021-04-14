@@ -6,6 +6,7 @@ using cAlgo.API;
 using cAlgo.API.Indicators;
 using cAlgo.API.Internals;
 using cAlgo.Indicators;
+using MathNet.Numerics;
 
 namespace cAlgo
 {
@@ -30,7 +31,7 @@ namespace cAlgo
 
             double intensityDecayConstant = 0.005;
 
-            return Intensity * Math.Pow(10, -intensityDecayConstant * (barIndex - StartIndex));
+            return Intensity * Math.Exp(-intensityDecayConstant * (barIndex - StartIndex));
         }
 
         public void UpdateIntensity(double increment)
@@ -48,10 +49,11 @@ namespace cAlgo
 
         private Color GetColor()
         {
-            double middleIntensityConstant = 40;
+            double middleConstant = 40;
             double steepnessConstant = 0.05;
+            double maxShiftConstant = 255;
 
-            double shift = 255 / (1 + Math.Pow(2, -steepnessConstant * (Intensity - middleIntensityConstant)));
+            double shift = maxShiftConstant * SpecialFunctions.Logistic(steepnessConstant * (Intensity - middleConstant));
             int blue = 255 - (int)shift;
             int red = (int)shift;
             return Color.FromArgb(200, red, 30, blue);
