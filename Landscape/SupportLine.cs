@@ -36,7 +36,7 @@ namespace cAlgo
         {
             if (barIndex < StartIndex) return 0;
 
-            double intensityDecayConstant = 0.005;
+            double intensityDecayConstant = 0.002;
 
             return Intensity * Math.Exp(-intensityDecayConstant * (barIndex - StartIndex));
         }
@@ -51,8 +51,8 @@ namespace cAlgo
 
             JointIndices.Add(StartIndex);
 
-            Price = (Price * Intensity + other.Price * Intensity) / (Intensity + other.Intensity);
-            Intensity = IntensityAtBar(other.StartIndex) + other.Intensity * (100 - Intensity);
+            Price = (Price * Intensity + other.Price * other.Intensity) / (Intensity + other.Intensity);
+            Intensity = IntensityAtBar(other.StartIndex) + other.Intensity / 100 * (100 - IntensityAtBar(other.StartIndex));
             StartIndex = other.StartIndex;
             StartTime = other.StartTime;
             
@@ -63,11 +63,11 @@ namespace cAlgo
             string name = Guid.NewGuid().ToString();
 
             chart.DrawHorizontalLine(name, Price, GetColor(), 2);
-            chart.DrawIcon(name + "start", ChartIconType.Diamond, StartTime, Price, GetColor());
+            chart.DrawIcon(name + "start", ChartIconType.Diamond, StartIndex, Price, GetColor());
 
             foreach(int joint in JointIndices)
             {
-                chart.DrawIcon(name + joint, ChartIconType.Star, StartTime, Price, GetColor());
+                chart.DrawIcon(name + joint, ChartIconType.Star, joint, Price, Color.Aqua);
             }
         }
 

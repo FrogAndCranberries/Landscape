@@ -26,6 +26,9 @@ namespace cAlgo.Robots
 
         [Parameter(DefaultValue = 0, MinValue = 0, MaxValue = 100)]
         public int SupportLineDistanceToMergeInPips { get; set; }
+        
+        [Parameter(DefaultValue = 0, MinValue = 0, MaxValue = 100)]
+        public int SupportLineVisualizationThreshold { get; set; }
 
         [Parameter(DefaultValue = false)]
         public bool ShouldVisualizePeaks { get; set; }
@@ -178,7 +181,7 @@ namespace cAlgo.Robots
         {
             foreach (ResistanceLine resistanceLine in resistanceLines)
             {
-                if (resistanceLine is SupportLine) 
+                if (resistanceLine is SupportLine && resistanceLine.IntensityAtBar(Bars.Count) > SupportLineVisualizationThreshold) 
                 {
                     resistanceLine.Visualize(Chart);
                 }

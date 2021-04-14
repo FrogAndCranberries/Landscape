@@ -58,7 +58,42 @@ namespace cAlgo
                 }
 
                 SupportLine mostIntensiveLine = closeLines.OrderByDescending(line => line.Intensity).First();
+
                 mostIntensiveLine.MergeWithLine(newLine);
+            }
+
+            return supportLines.Select(supportLine => supportLine as ResistanceLine).ToList();
+        }
+
+        private List<ResistanceLine> GetSupportLinesWithPritouts(List<Trend> trends, int supportLineDistanceToMergeInPips)
+        {
+            List<SupportLine> supportLines = new List<SupportLine>();
+
+            double minimalSupportLineDistanceToMergeConstant = supportLineDistanceToMergeInPips * AlgoAPI.Symbol.PipSize;
+
+            foreach(Trend trend in trends)
+            {
+                if (!trend.FormsSupportLine()) continue;
+
+                SupportLine newLine = GetSupportLine(trend);
+
+                List<SupportLine> closeLines = supportLines.FindAll(
+                    line => line != null && Math.Abs(line.Price - newLine.Price) < minimalSupportLineDistanceToMergeConstant);
+                
+                if(closeLines.Count == 0)
+                {
+                    supportLines.Add(newLine);
+                    continue;
+                }
+
+                SupportLine mostIntensiveLine = closeLines.OrderByDescending(line => line.Intensity).First();
+
+                AlgoAPI.Print(string.Format("Merging {0} into {1}.", newLine.ToString(), mostIntensiveLine.ToString()));
+
+                AlgoAPI.Print(string.Format("Intensity at joint {0}.", mostIntensiveLine.IntensityAtBar(newLine.StartIndex)));
+                mostIntensiveLine.MergeWithLine(newLine);
+
+                AlgoAPI.Print(string.Format("Produced {0}.", mostIntensiveLine.ToString()));
             }
 
             return supportLines.Select(supportLine => supportLine as ResistanceLine).ToList();
