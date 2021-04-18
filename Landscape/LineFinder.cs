@@ -107,6 +107,8 @@ namespace cAlgo
         {
             TrendCore core = trend.Core;
 
+            double lineIntensity = GetTrendLineIntensity(trend);
+
             int[] coreBarsIndices = Generate.LinearRangeInt32(core.StartIndex, core.EndIndex);
 
             double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.HighPrices[index]).ToArray();
@@ -115,7 +117,7 @@ namespace cAlgo
 
             Tuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
 
-            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, core, Color.Green);
+            TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, core, lineIntensity);
 
             return highTrendLine;
         }
@@ -128,6 +130,8 @@ namespace cAlgo
         {
             TrendCore core = trend.Core;
 
+            double lineIntensity = GetTrendLineIntensity(trend);
+
             int[] coreBarsIndices = Generate.LinearRangeInt32(core.StartIndex, core.EndIndex);
 
             double[] corePrices = coreBarsIndices.Select(index => AlgoAPI.Bars.LowPrices[index]).ToArray();
@@ -136,9 +140,14 @@ namespace cAlgo
 
             Tuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
 
-            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, core, Color.Blue);
+            TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, core, lineIntensity);
 
             return lowTrendLine;
+        }
+
+        private double GetTrendLineIntensity(Trend trend)
+        {
+            return trend.Intensity;
         }
 
         public SupportLine GetSupportLine(Trend trend)

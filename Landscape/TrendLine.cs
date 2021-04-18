@@ -18,14 +18,12 @@ namespace cAlgo
 
         public TrendCore Core { get; private set; }
 
-        private Color Color { get; set; }
-
-        public TrendLine(double slopeConstant, double intersectionConstant, TrendCore core, Color color)
+        public TrendLine(double slopeConstant, double intersectionConstant, TrendCore core, double intensity)
         {
             SlopeConstant = slopeConstant;
             IntersectionConstant = intersectionConstant;
             Core = core;
-            Color = color;
+            Intensity = intensity;
         }
 
         public override double IntensityAtBar(int barIndex)
