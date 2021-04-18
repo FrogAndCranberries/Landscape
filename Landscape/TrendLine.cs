@@ -6,6 +6,7 @@ using cAlgo.API;
 using cAlgo.API.Indicators;
 using cAlgo.API.Internals;
 using cAlgo.Indicators;
+using MathNet.Numerics;
 
 namespace cAlgo
 {
@@ -31,7 +32,7 @@ namespace cAlgo
         {
             if (barIndex < Core.EndIndex) return 0;
 
-            double intensityDecayConstant = ConstantManager.Trends.IntensityDecay;
+            double intensityDecayConstant = ConstantManager.TrendLines.IntensityDecay;
 
             return Intensity * Math.Exp(-intensityDecayConstant * (barIndex - Core.EndIndex));
         }
@@ -43,7 +44,20 @@ namespace cAlgo
             double coreStartPrice = SlopeConstant * Core.StartIndex + IntersectionConstant;
             double coreEndPrice = SlopeConstant * Core.EndIndex + IntersectionConstant;
 
-            chart.DrawTrendLine(name, Core.StartIndex, coreStartPrice, Core.EndIndex, coreEndPrice, Color);
+            chart.DrawTrendLine(name, Core.StartIndex, coreStartPrice, Core.EndIndex, coreEndPrice, GetColor());
+        }
+
+        //TODO: base color on intensity at current bar
+        private Color GetColor()
+        {
+            double maxShiftConstant = ConstantManager.TrendLines.IntensityToColorMaximum;
+            double centerConstant = ConstantManager.TrendLines.IntensityToColorCenter;
+            double steepnessConstant = ConstantManager.TrendLines.IntensityToColorSteepness;
+
+            double shift = maxShiftConstant * SpecialFunctions.Logistic(steepnessConstant * (Intensity - centerConstant));
+            int green = 255 - (int)shift;
+            int red = (int)shift;
+            return Color.FromArgb(200, red, green, 30);
         }
     }
 }

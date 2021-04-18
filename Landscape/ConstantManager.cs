@@ -8,6 +8,7 @@ namespace cAlgo
     static class ConstantManager
     {
         public static SupportLineConstantsRepository SupportLines = new SupportLineConstantsRepository();
+        public static TrendLineConstantsRepository TrendLines = new TrendLineConstantsRepository();
         public static TrendConstantsRepository Trends = new TrendConstantsRepository();
     }
 
@@ -30,10 +31,27 @@ namespace cAlgo
         }
     }
 
-    class TrendConstantsRepository
+    class TrendLineConstantsRepository
     {
         public double IntensityDecay { get; set; }
 
+        public double IntensityToColorMaximum { get; set; }
+
+        public double IntensityToColorCenter { get; set; }
+
+        public double IntensityToColorSteepness { get; set; }
+
+        public TrendLineConstantsRepository()
+        {
+            IntensityDecay = 0.002;
+            IntensityToColorMaximum = 255;
+            IntensityToColorCenter = 40;
+            IntensityToColorSteepness = 0.05;
+        }
+    }
+
+    class TrendConstantsRepository
+    {
         public double LengthToIntensityMaximum { get; set; }
 
         public double LengthToIntensityCenter { get; set; }
@@ -42,7 +60,6 @@ namespace cAlgo
 
         public TrendConstantsRepository()
         {
-            IntensityDecay = 0.002;
             LengthToIntensityMaximum = 100;
             LengthToIntensityCenter = 50;
             LengthToIntensitySteepness = 0.05;

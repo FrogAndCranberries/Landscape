@@ -71,6 +71,7 @@ namespace cAlgo
             }
         }
 
+        //TODO: base color on intensity at current bar
         private Color GetColor()
         {
             double maxShiftConstant = ConstantManager.SupportLines.IntensityToColorMaximum;
