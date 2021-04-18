@@ -170,11 +170,11 @@ namespace cAlgo
         {
             double length = Core.LengthInBars;
 
-            double maxIntensityConstant = 100;
-            double steepnessConstant = 0.05;
-            double middleConstant = 50;
+            double maximalIntensityConstant = ConstantManager.Trends.LengthToIntensityMaximum;
+            double centerConstant = ConstantManager.Trends.LengthToIntensityCenter;
+            double steepnessConstant = ConstantManager.Trends.LengthToIntensitySteepness;
 
-            Intensity = maxIntensityConstant * SpecialFunctions.Logistic(steepnessConstant*(length - middleConstant));
+            Intensity = maximalIntensityConstant * SpecialFunctions.Logistic(steepnessConstant*(length - centerConstant));
         }
     }
 }

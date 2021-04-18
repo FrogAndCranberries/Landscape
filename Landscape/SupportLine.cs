@@ -36,7 +36,7 @@ namespace cAlgo
         {
             if (barIndex < StartIndex) return 0;
 
-            double intensityDecayConstant = 0.002;
+            double intensityDecayConstant = ConstantManager.SupportLines.IntensityDecay;
 
             return Intensity * Math.Exp(-intensityDecayConstant * (barIndex - StartIndex));
         }
@@ -73,11 +73,11 @@ namespace cAlgo
 
         private Color GetColor()
         {
-            double middleConstant = 40;
-            double steepnessConstant = 0.05;
-            double maxShiftConstant = 255;
+            double maxShiftConstant = ConstantManager.SupportLines.IntensityToColorMaximum;
+            double centerConstant = ConstantManager.SupportLines.IntensityToColorCenter;
+            double steepnessConstant = ConstantManager.SupportLines.IntensityToColorSteepness;
 
-            double shift = maxShiftConstant * SpecialFunctions.Logistic(steepnessConstant * (Intensity - middleConstant));
+            double shift = maxShiftConstant * SpecialFunctions.Logistic(steepnessConstant * (Intensity - centerConstant));
             int blue = 255 - (int)shift;
             int red = (int)shift;
             return Color.FromArgb(200, red, 30, blue);
