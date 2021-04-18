@@ -42,7 +42,7 @@ namespace cAlgo
         /// <returns>List of all found trends</returns>
         private List<Trend> GetTrendSegments(List<Peak> peaks)
         {
-            ValidateInputPeakList(peaks);
+            ValidateGetTrendSegmentsInput(peaks);
 
             List<Peak> highPeaks = peaks.FindAll(peak => peak.FromHighPrice);
             List<Peak> lowPeaks = peaks.FindAll(peak => !peak.FromHighPrice);
@@ -95,12 +95,28 @@ namespace cAlgo
             return trendSegments;
         }
 
-        private void ValidateInputPeakList(List<Peak> peaks)
+        private void ValidateGetTrendSegmentsInput(List<Peak> peaks)
+        {
+            ValidatePeakOrdering(peaks);
+
+            ValidatePeakCount(peaks);
+        }
+
+        private void ValidatePeakOrdering(List<Peak> peaks)
+        {
+            List<Peak> orderedPeaks = peaks.OrderBy(peak => peak.BarIndex).ToList();
+            if (!peaks.SequenceEqual(orderedPeaks))
+            {
+                string message = "Cannot find trends between peaks that are not chronologically ordered.";
+                throw new ArgumentException(message);
+            }
+        }
+
+        private void ValidatePeakCount(List<Peak> peaks)
         {
             List<Peak> highPeaks = peaks.FindAll(peak => peak.FromHighPrice);
             List<Peak> lowPeaks = peaks.FindAll(peak => !peak.FromHighPrice);
 
-            // TODO: Create Peak ordering based on barindex and check the input list was ordered
             if (highPeaks.Count < 2 || lowPeaks.Count < 2)
             {
                 string message = "Cannot find trends between less than two high- and two low-price peaks.";

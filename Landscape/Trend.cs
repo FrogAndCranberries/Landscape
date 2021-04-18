@@ -54,7 +54,6 @@ namespace cAlgo
 
             Core = new TrendCore(HighStartPeak, LowStartPeak, HighEndPeak, LowEndPeak);
 
-            // TODO: Add a source period check and assignment
             HighTrendSlope = GetTrendSlope(highStartPeak, highEndPeak);
             LowTrendSlope = GetTrendSlope(lowStartPeak, lowEndPeak);
             HighTrendType = GetTrendType(HighTrendSlope, slopeThreshold);
