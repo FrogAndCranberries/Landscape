@@ -29,7 +29,11 @@ namespace cAlgo
 
         public override double IntensityAtBar(int barIndex)
         {
-            throw new NotImplementedException();
+            if (barIndex < Core.EndIndex) return 0;
+
+            double intensityDecayConstant = ConstantManager.Trends.IntensityDecay;
+
+            return Intensity * Math.Exp(-intensityDecayConstant * (barIndex - Core.EndIndex));
         }
 
         public override void Visualize(Chart chart)

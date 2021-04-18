@@ -32,6 +32,8 @@ namespace cAlgo
 
     class TrendConstantsRepository
     {
+        public double IntensityDecay { get; set; }
+
         public double LengthToIntensityMaximum { get; set; }
 
         public double LengthToIntensityCenter { get; set; }
@@ -40,6 +42,7 @@ namespace cAlgo
 
         public TrendConstantsRepository()
         {
+            IntensityDecay = 0.002;
             LengthToIntensityMaximum = 100;
             LengthToIntensityCenter = 50;
             LengthToIntensitySteepness = 0.05;
