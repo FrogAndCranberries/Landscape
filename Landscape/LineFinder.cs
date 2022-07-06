@@ -113,7 +113,7 @@ namespace cAlgo
 
             double[] coreIndicesAsDouble = coreBarsIndices.Select(index => (double)index).ToArray();
 
-            Tuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
+            ValueTuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
 
             TrendLine highTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, core, Color.Green);
 
@@ -134,7 +134,7 @@ namespace cAlgo
 
             double[] coreIndicesAsDouble = coreBarsIndices.Select(index => (double)index).ToArray();
 
-            Tuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
+            ValueTuple<double, double> lineCoefficients = Fit.Line(coreIndicesAsDouble, corePrices);
 
             TrendLine lowTrendLine = new TrendLine(lineCoefficients.Item2, lineCoefficients.Item1, core, Color.Blue);
 

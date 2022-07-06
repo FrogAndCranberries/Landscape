@@ -26,7 +26,7 @@ namespace cAlgo.Robots
 
         [Parameter(DefaultValue = 0, MinValue = 0, MaxValue = 100)]
         public int SupportLineDistanceToMergeInPips { get; set; }
-        
+
         [Parameter(DefaultValue = 0, MinValue = 0, MaxValue = 100)]
         public int SupportLineVisualizationThreshold { get; set; }
 
@@ -48,7 +48,12 @@ namespace cAlgo.Robots
         /// <summary>
         /// Will determine the peakSearchPeriod for each timeframe layer of landscape creation. Values unknown yet
         /// </summary>
-        List<int> Periods = new List<int>() {5, 10, 20};
+        List<int> Periods = new List<int> 
+        {
+            5,
+            10,
+            20
+        };
 
         #endregion
 
@@ -93,7 +98,7 @@ namespace cAlgo.Robots
         {
             PeakFinder peakFinder = new PeakFinder(this);
 
-            List<Peak> peaks= peakFinder.FindPeaks(PeakSearchPeriod);
+            List<Peak> peaks = peakFinder.FindPeaks(PeakSearchPeriod);
 
             TrendFinder trendFinder = new TrendFinder(this, trendTypeThreshold);
 
@@ -103,17 +108,21 @@ namespace cAlgo.Robots
 
             List<ResistanceLine> resistanceLines = lineFinder.FindLines(peaks, trends, SupportLineDistanceToMergeInPips);
 
-            if (ShouldVisualizePeaks) VisualizePeaks(peaks);
-            if (ShouldVisualizeTrendContours) VisualizeTrendsContours(trends);
-            if (ShouldVisualizeTrendLines) VisualizeTrendLines(resistanceLines);
-            if (ShouldVisualizeSupportLines) VisualizeSupportLines(resistanceLines);
+            if (ShouldVisualizePeaks)
+                VisualizePeaks(peaks);
+            if (ShouldVisualizeTrendContours)
+                VisualizeTrendsContours(trends);
+            if (ShouldVisualizeTrendLines)
+                VisualizeTrendLines(resistanceLines);
+            if (ShouldVisualizeSupportLines)
+                VisualizeSupportLines(resistanceLines);
 
             //Will be used to get multiple landscape layers with different line id periods
-            /*foreach(int period in Periods)
+        }
+        /*foreach(int period in Periods)
             {
                 BaseLines.AddRange(IdentifyLines(period, trendTypeThreshold));
             }*/
-        }
         private void CreateConditions()
         {
 
@@ -131,7 +140,7 @@ namespace cAlgo.Robots
         /// <param name="peaks"></param>
         private void VisualizePeaks(List<Peak> peaks)
         {
-            foreach(Peak peak in peaks)
+            foreach (Peak peak in peaks)
             {
                 peak.Visualize(Chart);
             }
@@ -143,7 +152,7 @@ namespace cAlgo.Robots
         /// <param name="trends"></param>
         private void VisualizeTrendsContours(List<Trend> trends)
         {
-            foreach(Trend trend in trends)
+            foreach (Trend trend in trends)
             {
                 trend.VisualizeContours(Chart);
             }
@@ -155,7 +164,7 @@ namespace cAlgo.Robots
         /// <param name="resistanceLines"></param>
         private void VisualizeResistanceLines(List<ResistanceLine> resistanceLines)
         {
-            foreach(ResistanceLine resistanceLine in resistanceLines)
+            foreach (ResistanceLine resistanceLine in resistanceLines)
             {
                 resistanceLine.Visualize(Chart);
             }
@@ -169,7 +178,8 @@ namespace cAlgo.Robots
         {
             foreach (ResistanceLine resistanceLine in resistanceLines)
             {
-                if(resistanceLine is TrendLine) resistanceLine.Visualize(Chart);
+                if (resistanceLine is TrendLine)
+                    resistanceLine.Visualize(Chart);
             }
         }
 
@@ -181,7 +191,7 @@ namespace cAlgo.Robots
         {
             foreach (ResistanceLine resistanceLine in resistanceLines)
             {
-                if (resistanceLine is SupportLine && resistanceLine.IntensityAtBar(Bars.Count) > SupportLineVisualizationThreshold) 
+                if (resistanceLine is SupportLine && resistanceLine.IntensityAtBar(Bars.Count) > SupportLineVisualizationThreshold)
                 {
                     resistanceLine.Visualize(Chart);
                 }

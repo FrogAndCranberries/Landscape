@@ -22,7 +22,7 @@ namespace cAlgo
         /// <summary>
         /// Finds all maxima and minima of high and low price with given period in bars. 
         /// </summary>
-        /// <param name="period">Minimal period the peaks must have before and after them</param>
+        /// <param name="period">Minimal number of bars between peaks of the same type</param>
         /// <returns>List of all found peaks</returns>
         public List<Peak> FindPeaks(int period)
         {
